@@ -154,15 +154,15 @@ public class SelectRenderers extends JPanel {
 			for (TreePath path : selected) {
 				String[] treePathString = path.toString().split(",");
 				StringBuilder nameStr = new StringBuilder();
-				int beginIndex;
-				int endIndex;
+				int firstRange;
+				int lastRange;
 				if (treePathString.length > 1) {
 					if (treePathString[0].contains(allRenderers.toString())) {
 						for (i = 1; i < treePathString.length; i++) {
-							beginIndex = treePathString[i].lastIndexOf("[") + 1;
-							endIndex = treePathString[i].indexOf("]");
-							if (endIndex > beginIndex) {
-								nameStr.append(treePathString[i].substring(beginIndex, endIndex).trim());
+							firstRange = treePathString[i].lastIndexOf("[") + 1;
+							lastRange = treePathString[i].indexOf("]");
+							if (lastRange > firstRange) {
+								nameStr.append(treePathString[i].substring(firstRange, lastRange).trim());
 							} else {
 								nameStr.append(treePathString[i].trim()).append(" ");
 							}
