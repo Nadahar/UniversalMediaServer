@@ -63,9 +63,41 @@ public class LibMediaInfoParser {
 				if (StringUtils.isNotBlank(info)) {
 					media.setSize(file.length());
 					StringTokenizer st = new StringTokenizer(info, "\n\r");
+				value = MI.Get(StreamType.General, 0, "Attachment");
+				if (isNotBlank(value)) {
+					media.setEmbeddedFontExists(true);
+				}
 
-					while (st.hasMoreTokens()) {
-						String line = st.nextToken().trim();
+				// set Video
+				int videos = MI.Count_Get(StreamType.Video);
+				if (videos > 0) {
+					for (int i = 0; i < videos; i++) {
+						// check for DXSA and DXSB subtitles (subs in video format)
+						if (MI.Get(StreamType.Video, i, "Title").startsWith("Subtitle")) {
+							currentSubTrack = new DLNAMediaSubtitle();
+							// First attempt to detect subtitle track format
+							currentSubTrack.setType(SubtitleType.valueOfLibMediaInfoCodec(MI.Get(StreamType.Video, i, "Format")));
+							// Second attempt to detect subtitle track format (CodecID usually is more accurate)
+							currentSubTrack.setType(SubtitleType.valueOfLibMediaInfoCodec(MI.Get(StreamType.Video, i, "CodecID")));
+							currentSubTrack.setId(media.getSubtitleTracksList().size());
+							addSub(currentSubTrack, media);
+						} else {
+							getFormat(StreamType.Video, media, currentAudioTrack, MI.Get(StreamType.Video, i, "Format").toLowerCase(), file);
+							getFormat(StreamType.Video, media, currentAudioTrack, MI.Get(StreamType.Video, i, "CodecID").toLowerCase(), file);
+							media.setWidth(getPixelValue(MI.Get(StreamType.Video, i, "Width")));
+							media.setHeight(getPixelValue(MI.Get(StreamType.Video, i, "Height")));
+							media.setFrameRate(getFPSValue(MI.Get(StreamType.Video, i, "FrameRate")));
+							media.setMatrixCoefficients(MI.Get(StreamType.Video, i, "matrix_coefficients"));
+							media.setStereoscopy(MI.Get(StreamType.Video, i, "MultiView_Layout"));
+							media.setAspectRatioContainer(MI.Get(StreamType.Video, i, "DisplayAspectRatio/String"));
+							media.setAspectRatioVideoTrack(MI.Get(StreamType.Video, i, "DisplayAspectRatio_Original/Stri"));
+							media.setFrameRate(getFPSValue(MI.Get(StreamType.Video, i, "FrameRate")));
+							media.setFrameRateMode(getFrameRateModeValue(MI.Get(StreamType.Video, i, "FrameRateMode")));
+							media.setReferenceFrameCount(getReferenceFrameCount(MI.Get(StreamType.Video, i, "Format_Settings_RefFrames/String")));
+							value = MI.Get(StreamType.Video, i, "Format_Settings_QPel", InfoType.Text, InfoType.Name);
+							if (isNotBlank(value)) {
+								media.putExtra(FormatConfiguration.MI_QPEL, value);
+							}
 
 						// Define the type of media
 						if (line.equals("Video") || line.startsWith("Video #")) {
