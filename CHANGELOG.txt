@@ -9,6 +9,7 @@
 		Minor improvements to the web interface
 		Fixed audio downsampling
 		Fixed a bug with parsing formats from MediaInfo
+		Fixed a startup error
 		Minor bugfixes and code optimizations
 		Removed the database compacting method that was never recommended
 		All changes from 4.3.1 and 4.4.0
