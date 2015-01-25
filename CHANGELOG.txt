@@ -1,6 +1,8 @@
 4.5.0 - 2015-09-?? - Changes since 4.4.0
 
 	General:
+		Fixed text in the Windows automatic updater
+		Fixed MediaInfo not parsing some rare data
 		Changed the interface for enabling/disabling renderer configurations
 		Changed the default setting for wrap_dts_into_pcm to false
 		Made sure files are always directly streamable via the Transcoding folder
