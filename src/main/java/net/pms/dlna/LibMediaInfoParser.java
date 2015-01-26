@@ -63,7 +63,7 @@ public class LibMediaInfoParser {
 				if (StringUtils.isNotBlank(info)) {
 					media.setSize(file.length());
 					StringTokenizer st = new StringTokenizer(info, "\n\r");
-				value = MI.Get(StreamType.General, 0, "Attachment");
+				value = MI.Get(StreamType.General, 0, "Attachements");
 				if (isNotBlank(value)) {
 					media.setEmbeddedFontExists(true);
 				}
