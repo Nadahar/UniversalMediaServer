@@ -18,6 +18,13 @@
  */
 package net.pms.network;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.*;
+import io.netty.handler.stream.ChunkedStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -228,6 +235,8 @@ public class RequestV2 extends HTTPResource {
 	 * created, it is sent and the resulting {@link ChannelFuture} object is returned.
 	 * See <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html">RFC-2616</a>
 	 * for HTTP header field definitions.
+	 *
+	 * @param ctx
 	 * @param output The {@link HttpResponse} object that will be used to construct the response.
 	 * @param e The {@link MessageEvent} object used to communicate with the client that sent
 	 * 			the request.
@@ -672,6 +681,18 @@ public class RequestV2 extends HTTPResource {
 					mediaRenderer,
 					searchCriteria
 				);
+
+				if (xbox360 && files.isEmpty()) {
+					// do it again...
+					files = PMS.get().getRootFolder(mediaRenderer).getDLNAResources(
+						"0",
+						browseDirectChildren,
+						startingIndex,
+						requestCount,
+						mediaRenderer,
+						searchCriteria
+					);
+				}
 
 				if (searchCriteria != null && files != null) {
 					UMSUtils.postSearch(files, searchCriteria);
