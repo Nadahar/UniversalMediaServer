@@ -625,6 +625,18 @@ public class Request extends HTTPResource {
 					searchCriteria
 				);
 
+				if (xbox360 && files.isEmpty()) {
+					// do it again...
+					files = PMS.get().getRootFolder(mediaRenderer).getDLNAResources(
+						"0",
+						browseDirectChildren,
+						startingIndex,
+						requestCount,
+						mediaRenderer,
+						searchCriteria
+					);
+				}
+
 				if (searchCriteria != null && files != null) {
 					UMSUtils.postSearch(files, searchCriteria);
 					if (xbox360) {
