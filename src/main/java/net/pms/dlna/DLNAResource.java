@@ -847,6 +847,175 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 	}
 
 	/**
+	 * Determine whether we are a candidate for streaming or transcoding to the
+	 * given renderer, and return the relevant player or null as appropriate.
+	 *
+	 * @param renderer The target renderer
+	 * @return A player if transcoding or null if streaming
+	 */
+	public Player resolvePlayer(RendererConfiguration renderer) {
+		PmsConfiguration configuration = PMS.getConfiguration(renderer);
+		boolean parserV2 = media != null && renderer != null && renderer.isMediaParserV2();
+		Player player = null;
+
+		if (media == null) {
+			media = new DLNAMediaInfo();
+		}
+
+		if (format == null) {
+			// Shouldn't happen, this is just a desperate measure
+			Format f = FormatFactory.getAssociatedFormat(getSystemName());
+			setFormat(f != null ? f : FormatFactory.getAssociatedFormat(".mpg"));
+		}
+
+		// Check if we're a transcode folder item
+		if (isNoName() && (getParent() instanceof FileTranscodeVirtualFolder)) {
+			// Yes, leave everything as-is
+			player = getPlayer();
+			LOGGER.trace("Selecting player {} based on transcode item settings", player);
+			return player;
+		}
+
+		// Try to match a player based on media information and format.
+		player = PlayerFactory.getPlayer(this);
+
+		if (player != null) {
+			String configurationForceExtensions = configuration.getForceTranscodeForExtensions();
+			String rendererForceExtensions = null;
+
+			if (renderer != null) {
+				rendererForceExtensions = renderer.getTranscodedExtensions();
+			}
+
+			// Should transcoding be forced for this format?
+			boolean forceTranscode = format.skip(configurationForceExtensions, rendererForceExtensions);
+
+			if (forceTranscode) {
+				LOGGER.trace("File \"{}\" will be forced to be transcoded by configuration", getName());
+			}
+
+			boolean hasSubsToTranscode = false;
+
+			/**
+			 * Figure out how to handle subtitles for this file if it's a video, subtitles
+			 * are enabled, and subtitles exist.
+			 */
+			if (
+				format.isVideo() &&
+				!configuration.isDisableSubtitles() &&
+				(
+					media.getSubtitleTracksList().size() > 0 ||
+					isSubsFile()
+				)
+			) {
+				boolean hasEmbeddedSubs = false;
+
+				for (DLNAMediaSubtitle s : media.getSubtitleTracksList()) {
+					hasEmbeddedSubs = (hasEmbeddedSubs || s.isEmbedded());
+				}
+
+				if (!parserV2) {
+					if (isSubsFile() && renderer != null && renderer.isSubtitlesStreamingSupported()) {
+						OutputParams params = new OutputParams(configuration);
+						Player.setAudioAndSubs(getSystemName(), media, params); // set proper subtitles in accordance with user setting
+						if (params.sid.isExternal() && renderer.isExternalSubtitlesFormatSupported(params.sid)) {
+							media_subtitle = params.sid;
+							media_subtitle.setSubsStreamable(true);
+							LOGGER.trace("Set media_subtitle");
+						} else {
+							LOGGER.trace("Did not set media_subtitle because the subtitle format is not supported by this renderer");
+						}
+					} else {
+						LOGGER.trace("Did not set media_subtitle because this file does not have external subtitles, or the renderer does not support streaming subtitles");
+					}
+				}
+
+				if (isSubsFile()) {
+					if (media_subtitle == null) {
+						// Subtitles are not set for streaming
+						forceTranscode = true;
+						hasSubsToTranscode = true;
+						LOGGER.trace("Subtitles for \"{}\" need to be transcoded because media_subtitle is null", getName());
+					} else {
+						LOGGER.trace("Subtitles for \"{}\" will not be transcoded because media_subtitle is not null", getName());
+					}
+				} else if (hasEmbeddedSubs) {
+					if (
+						renderer != null &&
+						(media_subtitle != null && !renderer.isEmbeddedSubtitlesFormatSupported(media_subtitle)) ||
+						!renderer.isEmbeddedSubtitlesSupported()
+					) {
+						forceTranscode = true;
+						hasSubsToTranscode = true;
+						LOGGER.trace("Subtitles for \"{}\" need to be transcoded because the renderer does not support internal subtitles", getName());
+					} else {
+						LOGGER.trace("Subtitles for \"{}\" will not be transcoded because the renderer supports internal subtitles", getName());
+					}
+				}
+			}
+
+			boolean isIncompatible = false;
+			String audioTracksList = getName() + media.getAudioTracksList().toString();
+
+			String prependTraceReason = "File \"{}\" will not be streamed because ";
+			if (!format.isCompatible(media, renderer)) {
+				isIncompatible = true;
+				LOGGER.trace(prependTraceReason + "it is not supported by the renderer", getName());
+			} else if (
+				configuration.isEncodedAudioPassthrough() &&
+				(
+					audioTracksList.contains("audio codec: AC3") ||
+					audioTracksList.contains("audio codec: DTS")
+				)
+			) {
+				isIncompatible = true;
+				LOGGER.trace(prependTraceReason + "the audio will use the encoded audio passthrough feature", getName());
+			} else if (renderer != null && format.isVideo()) {
+				if (
+					renderer.isKeepAspectRatio() &&
+					!"16:9".equals(media.getAspectRatioContainer())
+				) {
+					isIncompatible = true;
+					LOGGER.trace(prependTraceReason + "the renderer needs us to add borders to change the aspect ratio from {} to 16/9.", getName(), media.getAspectRatioContainer());
+				} else if (
+					renderer.isMaximumResolutionSpecified() &&
+					(
+						media.getWidth()  > renderer.getMaxVideoWidth() ||
+						media.getHeight() > renderer.getMaxVideoHeight()
+					)
+				) {
+					isIncompatible = true;
+					LOGGER.trace(prependTraceReason + "the resolution is too high for the renderer.", getName());
+				} else if (media.getBitrate() > (renderer.getMaxBandwidth() / 2)) {
+					isIncompatible = true;
+					LOGGER.trace(prependTraceReason + "the bitrate is too high.", getName());
+				}
+			}
+
+			// Prefer transcoding over streaming if:
+			// 1) the media is unsupported by the renderer, or
+			// 2) there are subs to transcode
+			boolean preferTranscode = isIncompatible || hasSubsToTranscode;
+
+			// Transcode if:
+			// 1) transcoding is forced by configuration, or
+			// 2) transcoding is preferred and not prevented by configuration
+			if (forceTranscode || (preferTranscode && !isSkipTranscode())) {
+				if (parserV2) {
+					LOGGER.trace("Final verdict: \"{}\" will be transcoded with player \"{}\" with mime type \"{}\"", getName(), player.toString(), renderer != null ? renderer.getMimeType(mimeType(player)) : media.getMimeType());
+				} else {
+					LOGGER.trace("Final verdict: \"{}\" will be transcoded with player \"{}\"", getName(), player.toString());
+				}
+			} else {
+				player = null;
+				LOGGER.trace("Final verdict: \"{}\" will be streamed", getName());
+			}
+		}
+		return player;
+	}
+
+
+	/**
 	 * Return the transcode folder for this resource.
 	 * If UMS is configured to hide transcode folders, null is returned.
 	 * If no folder exists and the create argument is false, null is returned.
@@ -2410,6 +2579,10 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 	}
 
 	public String mimeType() {
+		return mimeType(player);
+	}
+
+	public String mimeType(Player player) {
 		if (player != null) {
 			// FIXME: This cannot be right. A player like FFmpeg can output many
 			// formats depending on the media and the renderer. Also, players are
