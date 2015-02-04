@@ -110,9 +110,7 @@ public class DbgPacker implements ActionListener {
 
 		// add confs of connected renderers
 		for (RendererConfiguration r : RendererConfiguration.getConnectedRenderersConfigurations()) {
-			if (r.getFile() != null) {
-				add(r.getFile());
-			}
+			add(r.getFile());
 		}
 
 		// add core items with debug.log last (LinkedHashMap preserves insertion order)
@@ -132,19 +130,17 @@ public class DbgPacker implements ActionListener {
 
 	private void add(String[] files) {
 		for (String file : files) {
-			LOGGER.debug("adding " + file);
-			try {
-				items.put(new File(file).getCanonicalFile(), null);
-			} catch (IOException e) {
-			}
+			add(new File(file));
 		}
 	}
 
 	private void add(File file) {
-		LOGGER.debug("adding " + file.getAbsolutePath());
-		try {
-			items.put(file.getCanonicalFile(), null);
-		} catch (IOException e) {
+		if (file != null) {
+			LOGGER.debug("adding " + file.getAbsolutePath());
+			try {
+				items.put(file.getCanonicalFile(), null);
+			} catch (IOException e) {
+			}
 		}
 	}
 
