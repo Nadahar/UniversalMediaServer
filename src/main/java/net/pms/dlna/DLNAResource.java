@@ -618,6 +618,11 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 							player = PlayerFactory.getPlayer(child);
 						}
 
+						child.setPlayer(player);
+						if (resumeRes != null) {
+							resumeRes.player = player;
+						}
+
 						if (player != null && !allChildrenAreFolders) {
 							String configurationForceExtensions = configuration.getForceTranscodeForExtensions();
 							String rendererForceExtensions = null;
