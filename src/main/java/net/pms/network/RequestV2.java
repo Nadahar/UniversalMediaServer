@@ -903,7 +903,12 @@ public class RequestV2 extends HTTPResource {
 				chunkWriteFuture.addListener(new ChannelFutureListener() {
 					@Override
 					public void operationComplete(ChannelFuture future) {
-						PMS.get().getRegistry().reenableGoToSleep();
+						try {
+							PMS.get().getRegistry().reenableGoToSleep();
+							inputStream.close();
+						} catch (IOException e) {
+							LOGGER.debug("Caught exception", e);
+						}
 
 						// Always close the channel after the response is sent because of
 						// a freeze at the end of video when the channel is not closed.
