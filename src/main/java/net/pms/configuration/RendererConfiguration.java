@@ -195,7 +195,12 @@ public class RendererConfiguration {
 						RendererConfiguration r = new RendererConfiguration(f);
 						r.rank = rank++;
 						String rendererName = r.getRendererName();
-						if (selectedRenderers.contains(rendererName) || selectedRenderers.contains(pmsConfiguration.ALL_RENDERERS)) {
+						String renderersGroup = null; 
+						if (rendererName.indexOf(" ") > 0) {
+							renderersGroup = rendererName.substring(0, rendererName.indexOf(" "));
+						}
+						
+						if (selectedRenderers.contains(rendererName) || selectedRenderers.contains(renderersGroup) || selectedRenderers.contains(pmsConf.ALL_RENDERERS)) {
 							enabledRendererConfs.add(r);
 						} else {
 							LOGGER.debug("Ignored " + rendererName + " configuration");
