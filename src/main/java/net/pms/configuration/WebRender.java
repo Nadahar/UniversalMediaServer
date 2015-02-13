@@ -83,8 +83,15 @@ public class WebRender extends RendererConfiguration {
 
 	@Override
 	public String getRendererIcon() {
-		if (StringUtils.isEmpty(ua)) {
-			return super.getRendererIcon();
+		switch (browser) {
+			case CHROME:  return "chrome.png";
+			case MSIE:    return "internetexplorer.png";
+			case FIREFOX: return "firefox.png";
+			case SAFARI:  return "safari.png";
+			case PS4:     return "ps4.png";
+			case XBOX1:   return "xbox-one.png";
+			case OPERA:   return "opera.png";
+			default:      return super.getRendererIcon();
 		}
 		if (ua.contains("chrome")) {
 			return "chrome.png";
