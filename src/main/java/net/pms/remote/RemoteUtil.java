@@ -43,6 +43,10 @@ public class RemoteUtil {
 	}
 
 	public static void dump(final InputStream in, final OutputStream os, final StartStopListenerDelegate start) throws IOException {
+		dump(in, os, null);
+	}
+
+	public static void dump(final InputStream in, final OutputStream os, final WebRender renderer) {
 		Runnable r = new Runnable() {
 			@Override
 			public void run() {

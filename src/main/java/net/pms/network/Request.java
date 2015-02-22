@@ -822,7 +822,12 @@ public class Request extends HTTPResource {
 				sendB = sendBytes(inputStream); //, ((lowRange > 0 && highRange > 0)?(highRange-lowRange):-1)
 			}
 
-			LOGGER.trace("Sending stream: " + sendB + " bytes of " + argument);
+			if (sendB > -1) {
+				LOGGER.trace("Sending stream: " + sendB + " bytes of " + argument);
+			} else {
+				// Premature end
+				startStopListenerDelegate.stop();
+			}
 			PMS.get().getFrame().setStatusLine(null);
 		} else { // inputStream is null
 			if (lowRange > 0 && highRange > 0) {
@@ -858,6 +863,7 @@ public class Request extends HTTPResource {
 			}
 		} catch (IOException e) {
 			LOGGER.trace("Sending stream with premature end: " + sendBytes + " bytes of " + argument + ". Reason: " + e.getMessage());
+			sendBytes = -1;
 		} finally {
 			fis.close();
 		}
