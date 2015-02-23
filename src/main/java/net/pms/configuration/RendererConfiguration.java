@@ -947,7 +947,7 @@ public class RendererConfiguration {
 	 * @return true if the renderer supports seek-by-time, false otherwise.
 	 */
 	public boolean isSeekByTime() {
-		return isSeekByTimeExclusive() || getBoolean(SEEK_BY_TIME, false);
+		return isSeekByTimeExclusive() || getString(SEEK_BY_TIME, "false").equalsIgnoreCase("true");
 	}
 
 	/**
@@ -958,7 +958,7 @@ public class RendererConfiguration {
 	 * (i.e. not in conjunction with seek-by-byte), false otherwise.
 	 */
 	public boolean isSeekByTimeExclusive() {
-		return getString(SEEK_BY_TIME, "").equalsIgnoreCase("exclusive");
+		return getString(SEEK_BY_TIME, "false").equalsIgnoreCase("exclusive");
 	}
 
 	public boolean isMuxH264MpegTS() {
