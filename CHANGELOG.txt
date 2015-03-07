@@ -1,6 +1,13 @@
 4.5.0 - 2015-09-?? - Changes since 4.4.0
 
 	General:
+		Added 64-bit versions of FFmpeg for a ~10% increase in transcoding speed
+		Improved detection of playback states
+		Improved connection awareness
+		Improved True Motion frame interpolation speed by up to 20%
+		Fixed the renderer SeekByTime setting
+		Fixed display names for videos that have the Track (song title) value set
+		Fixed incorrect ContentFeatures headers being sent to renderers (thanks, master-nevi!)
 		Fixed text in the Windows automatic updater
 		Fixed MediaInfo not parsing some rare data
 		Fixed detection of font attachments
@@ -14,6 +21,8 @@
 		Fixed the web interface when browsing via Safari
 		Improved stability when disabling renderers
 	Renderers:
+		Improved support for LG LED-backlit LCD 2014 TVs
+		Improved support for Samsung H6203 TVs
 		Added support for Kodi Media Center
 		Added support for more Panasonic Blu-ray players
 		Added support for Samsung HT-F4 series home entertainment systems
@@ -26,10 +35,30 @@
 		Updated the image for Xbox 360
 		Fixed 24-bit FLAC playback on PS3 via the Videos folder
 	Languages:
+		Made more strings translatable
 		Updated Czech translation
+		Updated Italian translation (thanks, bartsimp!)
 		Updated French translation (thanks, Kirvx!)
 		Updated Spanish translation (thanks, AlfredoRamos!)
 	External Components:
+		Updated Chromecast Java API to 0.0.6
+		Updated Commons Codec to 1.10
+		Updated FEST Util to 1.2.5
+		Updated FFmpeg for Windows and OS X, which:
+			Improved support for many containers and codecs
+			Fixed bugs
+		Updated Gson to 2.3.1
+		Updated h2database to 1.4.186, which:
+			Fixed memory issues
+			Fixed caching issues
+		Updated InterFrame to 2.8.0, which:
+			Increased processing speed by up to 20%
+			Reduced memory use
+			Reduced dependencies
+		Updated JDom to 2.0.2
+		Updated JUnit to 4.12
+		Updated Plexus Utils to 3.0.21
+		Updated slf4j to 1.7.10
 		Updated MediaInfo for OS X to 0.7.71, which:
 			Improved folder population time
 			Added and improved support for many formats
