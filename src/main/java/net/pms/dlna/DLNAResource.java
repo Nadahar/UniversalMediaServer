@@ -1907,7 +1907,7 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 																if (configuration.isAutoloadExternalSubtitles()) {
 																	// Subtitle is external and we want external subtitles, look no further
 																	matchedSub = present_sub;
-																	LOGGER.trace("Found a match: " + matchedSub);
+																	LOGGER.trace("Matched subtitles track: " + matchedSub);
 																	break;
 																} else {
 																	// Subtitle is external but we do not want external subtitles, keep searching
@@ -1915,7 +1915,7 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 																}
 															} else {
 																matchedSub = present_sub;
-																LOGGER.trace("Found a match: " + matchedSub);
+																LOGGER.trace("Matched subtitles track: " + matchedSub);
 																if (configuration.isAutoloadExternalSubtitles()) {
 																	// Subtitle is internal and we will wait to see if an external one is available instead
 																	matchedInternalSubtitles = true;
@@ -2014,7 +2014,7 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 														)
 													) {
 														params.sid = sub;
-														LOGGER.trace("Matched sub track: " + params.sid);
+														LOGGER.trace("Matched subtitles track: " + params.sid);
 														break;
 													}
 												}
