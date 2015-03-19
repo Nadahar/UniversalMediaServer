@@ -5,6 +5,9 @@
 		Improved detection of playback states
 		Improved connection awareness
 		Improved True Motion frame interpolation speed by up to 20%
+		Improved folder population speed
+		Improved support for 3GPP files
+		Improved descriptions of settings
 		Fixed the renderer SeekByTime setting
 		Fixed display names for videos that have the Track (song title) value set
 		Fixed incorrect ContentFeatures headers being sent to renderers (thanks, master-nevi!)
