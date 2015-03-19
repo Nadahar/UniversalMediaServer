@@ -1816,15 +1816,14 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 											if (audio.matchCode(lang)) {
 												params.aid = audio;
 												LOGGER.trace("Matched audio track: " + audio);
-												st = null;
 												break;
 											}
 										}
 									}
 								}
 
+								// preferred audio not found take a default audio track, dts first if possible
 								if (params.aid == null && media != null && media.getAudioTracksList().size() > 0) {
-									// Take a default audio track, dts first if possible
 									for (DLNAMediaAudio audio : media.getAudioTracksList()) {
 										if (audio.isDTS()) {
 											params.aid = audio;
@@ -1833,10 +1832,8 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 										}
 									}
 
-									if (params.aid == null) {
-										params.aid = media.getAudioTracksList().get(0);
-										LOGGER.trace("Chose a default audio track: " + params.aid);
-									}
+									params.aid = media.getAudioTracksList().get(0);
+									LOGGER.trace("Chose a default audio track: " + params.aid);
 								}
 
 								String currentLang = null;
@@ -1871,11 +1868,11 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 								}
 
 								if (!finishedMatchingPreferences) {
-									StringTokenizer st1 = new StringTokenizer(configuration.getAudioSubLanguages(), ";");
+									StringTokenizer st = new StringTokenizer(configuration.getAudioSubLanguages(), ";");
 
 									boolean matchedEmbeddedSubtitle = false;
-									while (st1.hasMoreTokens()) {
-										String pair = st1.nextToken();
+									while (st.hasMoreTokens()) {
+										String pair = st.nextToken();
 										if (pair.contains(",")) {
 											String audio = pair.substring(0, pair.indexOf(','));
 											String sub = pair.substring(pair.indexOf(',') + 1);
@@ -1954,7 +1951,7 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 											// Priority to external subtitles
 											for (DLNAMediaSubtitle sub : media.getSubtitleTracksList()) {
 												if (matchedSub != null && matchedSub.getLang() != null && matchedSub.getLang().equals("off")) {
-													StringTokenizer st = new StringTokenizer(configuration.getForcedSubtitleTags(), ",");
+													st = new StringTokenizer(configuration.getForcedSubtitleTags(), ",");
 
 													while (sub.getFlavor() != null && st.hasMoreTokens()) {
 														String forcedTags = st.nextToken();
@@ -2000,7 +1997,7 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 										}
 
 										if (!finishedMatchingPreferences && params.sid == null) {
-											StringTokenizer st = new StringTokenizer(configuration.getSubtitlesLanguages(), ",");
+											st = new StringTokenizer(configuration.getSubtitlesLanguages(), ",");
 											while (st != null && st.hasMoreTokens()) {
 												String lang = st.nextToken();
 												lang = lang.trim();
@@ -2015,7 +2012,6 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 													) {
 														params.sid = sub;
 														LOGGER.trace("Matched sub track: " + params.sid);
-														st = null;
 														break;
 													}
 												}
