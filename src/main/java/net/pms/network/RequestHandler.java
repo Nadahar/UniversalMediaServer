@@ -73,8 +73,7 @@ public class RequestHandler implements Runnable {
 		try {
 			int receivedContentLength = -1;
 			String userAgentString = null;
-			StringBuilder unknownHeaders = new StringBuilder();
-			String separator = "";
+			ArrayList<String> identifiers = new ArrayList<>();
 			RendererConfiguration renderer = null;
 
 			InetSocketAddress remoteAddress = (InetSocketAddress) socket.getRemoteSocketAddress();
@@ -201,8 +200,7 @@ public class RequestHandler implements Runnable {
 
 						if (!isKnown) {
 							// Truly unknown header, therefore interesting. Save for later use.
-							unknownHeaders.append(separator).append(headerLine);
-							separator = ", ";
+							identifiers.add(headerLine);
 						}
 					}
 				} catch (IllegalArgumentException e) {
@@ -212,7 +210,7 @@ public class RequestHandler implements Runnable {
 
 			if (request != null) {
 				// Still no media renderer recognized?
-				if (request.getMediaRenderer() == null) {
+				if (renderer == null) {
 					// Attempt 4: Not really an attempt; all other attempts to recognize
 					// the renderer have failed. The only option left is to assume the
 					// default renderer.
@@ -229,7 +227,7 @@ public class RequestHandler implements Runnable {
 					if (userAgentString != null) {
 						LOGGER.debug("HTTP User-Agent: " + userAgentString);
 					}
-					LOGGER.trace("Recognized media renderer: " + request.getMediaRenderer().getRendererName());
+					LOGGER.trace("Recognized media renderer: " + renderer.getRendererName());
 				}
 			}
 

@@ -52,6 +52,7 @@ public class RendererConfiguration {
 	private FormatConfiguration formatConfiguration;
 	private int rank;
 	private Matcher sortedHeaderMatcher;
+	protected List<String> identifiers = null;
 
 	// Holds MIME type aliases
 	private final Map<String, String> mimes;
@@ -1731,5 +1732,13 @@ public class RendererConfiguration {
 		bitrates[0] = (int) Double.parseDouble(bitrate);
 
 		return bitrates;
+	}
+
+	public void setIdentifiers(List<String> identifiers) {
+		identifiers = identifiers;
+	}
+
+	public List<String> getIdentifiers() {
+		return identifiers;
 	}
 }

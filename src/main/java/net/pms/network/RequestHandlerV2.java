@@ -30,6 +30,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.channels.ClosedChannelException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -86,8 +87,7 @@ public class RequestHandlerV2 extends SimpleChannelUpstreamHandler {
 		RequestV2 request = null;
 		RendererConfiguration renderer = null;
 		String userAgentString = null;
-		StringBuilder unknownHeaders = new StringBuilder();
-		String separator = "";
+		ArrayList<String> identifiers = new ArrayList<>();
 
 		HttpRequest nettyRequest = this.nettyRequest = (HttpRequest) e.getMessage();
 
@@ -203,8 +203,7 @@ public class RequestHandlerV2 extends SimpleChannelUpstreamHandler {
 
 						if (!isKnown) {
 							// Truly unknown header, therefore interesting. Save for later use.
-							unknownHeaders.append(separator).append(headerLine);
-							separator = ", ";
+							identifiers.add(headerLine);
 						}
 					}
 				}
@@ -214,7 +213,7 @@ public class RequestHandlerV2 extends SimpleChannelUpstreamHandler {
 		}
 
 		// Still no media renderer recognized?
-		if (request.getMediaRenderer() == null) {
+		if (renderer == null) {
 
 			// Attempt 4: Not really an attempt; all other attempts to recognize
 			// the renderer have failed. The only option left is to assume the
@@ -233,7 +232,7 @@ public class RequestHandlerV2 extends SimpleChannelUpstreamHandler {
 				LOGGER.debug("HTTP User-Agent: " + userAgentString);
 			}
 
-			LOGGER.trace("Recognized media renderer: " + request.getMediaRenderer().getRendererName());
+			LOGGER.trace("Recognized media renderer: " + renderer.getRendererName());
 		}
 
 		if (nettyRequest.headers().contains(HttpHeaders.Names.CONTENT_LENGTH)) {
