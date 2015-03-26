@@ -1735,7 +1735,7 @@ public class RendererConfiguration {
 	}
 
 	public void setIdentifiers(List<String> identifiers) {
-		identifiers = identifiers;
+		this.identifiers = identifiers;
 	}
 
 	public List<String> getIdentifiers() {
