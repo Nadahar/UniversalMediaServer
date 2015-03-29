@@ -1424,6 +1424,19 @@ public class RendererConfiguration {
 		return getBoolean(RESCALE_BY_RENDERER, true);
 	}
 
+	/**
+	 * Whether to prepend audio track numbers to audio titles.
+	 * e.g. "Stairway to Heaven" becomes "4: Stairway to Heaven".
+	 *
+	 * This is to provide a workaround for devices that order everything
+	 * alphabetically instead of in the order we give, like Samsung devices.
+	 *
+	 * @return whether to prepend audio track numbers to audio titles.
+	 */
+	public boolean isPrependTrackNumbers() {
+		return getBoolean(PREPEND_TRACK_NUMBERS, false);
+	}
+
 	public String getFFmpegVideoFilterOverride() {
 		return getString(OVERRIDE_FFMPEG_VF, "");
 	}

@@ -47,7 +47,15 @@ public class LibMediaInfoParser {
 		}
 	}
 
+	@Deprecated
 	public synchronized static void parse(DLNAMediaInfo media, InputFile inputFile, int type) {
+		parse(media, inputFile, type, null);
+	}
+
+	/**
+	 * Parse media via MediaInfo.
+	 */
+	public synchronized static void parse(DLNAMediaInfo media, InputFile inputFile, int type, RendererConfiguration renderer) {
 		File file = inputFile.getFile();
 
 		if (!media.isMediaparsed() && file != null && MI.isValid() && MI.Open(file.getAbsolutePath()) > 0) {
