@@ -2581,10 +2581,15 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 					assert refCount > 0;
 					requestIdToRefcount.put(requestId, refCount - 1);
 
+					if (start != startTime) {
+						return;
+					}
+
 					Runnable r = new Runnable() {
 						@Override
 						public void run() {
 							if (refCount == 1) {
+								requestIdToRefcount.put(requestId, 0);
 								InetAddress rendererIp;
 								try {
 									rendererIp = InetAddress.getByName(rendererId);
