@@ -8,6 +8,7 @@
 		Fixed MP4, M4A and 3GP file compatibility on some renderers
 		Fixed bug with the renderer selection window
 		Fixed audio and image compatibility on some renderers
+		Fixed transcoding with subtitles on 64-bit systems
 		Added 64-bit versions of FFmpeg for a ~10% increase in transcoding speed
 		Improved detection of playback states
 		Improved connection awareness
