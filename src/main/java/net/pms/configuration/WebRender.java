@@ -73,6 +73,15 @@ public class WebRender extends RendererConfiguration {
 		ip = sa.getHostAddress();
 	}
 
+	@Override
+	public InetAddress getAddress() {
+		try {
+			return InetAddress.getByName(ip);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
 	public void associatePort(int port) {
 		this.port = port;
 	}
