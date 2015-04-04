@@ -65,6 +65,7 @@ public class PMS {
 	private static final String CONSOLE = "console";
 	private static final String NOCONSOLE = "noconsole";
 	private static final String PROFILES = "profiles";
+	private static final String TRACE = "trace";
 
 	/**
 	 * @deprecated The version has moved to the resources/project.properties file. Use {@link #getVersion()} instead.
@@ -1039,6 +1040,7 @@ public class PMS {
 	public static void main(String args[]) throws IOException, ConfigurationException {
 		boolean displayProfileChooser = false;
 		boolean headless = true;
+		boolean forceTRACE = false;
 
 		if (args.length > 0) {
 			for (String arg : args) {
@@ -1057,6 +1059,9 @@ public class PMS {
 						break;
 					case PROFILES:
 						displayProfileChooser = true;
+						break;
+					case TRACE:
+						forceTRACE = true;
 						break;
 					default:
 						break;
@@ -1102,6 +1107,15 @@ public class PMS {
 			// XXX not sure this is (still) true: the only filter
 			// we use is ch.qos.logback.classic.filter.ThresholdFilter
 			LoggingConfigFileLoader.load();
+
+			// Force TRACE logging
+			if (forceTRACE) {
+				LOGGER.debug("Forcing TRACE");
+				ch.qos.logback.classic.Logger l=(ch.qos.logback.classic.Logger)LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+				l.setLevel(ch.qos.logback.classic.Level.TRACE);
+			}
+
+			LOGGER.debug(new Date().toString());
 
 			try {
 				getConfiguration().initCred();
