@@ -196,6 +196,7 @@ public class RendererConfiguration {
 						RendererConfiguration r = new RendererConfiguration(f);
 						r.rank = rank++;
 						String rendererName = r.getConfName();
+						allRenderersNames.add(rendererName);
 						String renderersGroup = null; 
 						if (rendererName.indexOf(" ") > 0) {
 							renderersGroup = rendererName.substring(0, rendererName.indexOf(" "));
@@ -230,26 +231,6 @@ public class RendererConfiguration {
 					defaultConf = fallbackConf;
 				}
 			}
-		}
-	}
-
-	private static void loadRenderersNames() {
-		File renderersDir = getRenderersDir();
-
-		if (renderersDir != null) {
-			LOGGER.info("Loading renderer names from " + renderersDir.getAbsolutePath());
-
-			for (File f : renderersDir.listFiles()) {
-				if (f.getName().endsWith(".conf")) {
-					try {
-						allRenderersNames.add(new RendererConfiguration(f).getConfName());
-					} catch (ConfigurationException ce) {
-						LOGGER.warn("Error loading " + f.getAbsolutePath());
-					}
-				}
-			}
-
-			Collections.sort(allRenderersNames, String.CASE_INSENSITIVE_ORDER);
 		}
 	}
 
@@ -1442,10 +1423,6 @@ public class RendererConfiguration {
 	}
 
 	public static ArrayList<String> getAllRenderersNames() {
-		if (allRenderersNames.isEmpty()) {
-			loadRenderersNames();
-		}
-
 		return allRenderersNames;
 	}
 
