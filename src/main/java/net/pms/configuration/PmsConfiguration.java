@@ -203,6 +203,7 @@ public class PmsConfiguration {
 	protected static final String KEY_RESUME_BACK = "resume_back";
 	protected static final String KEY_RESUME_KEEP_TIME = "resume_keep_time";
 	protected static final String KEY_RESUME_REWIND = "resume_rewind";
+	protected static final String KEY_ROOT_LOG_LEVEL = "log_level";
 	protected static final String KEY_RUN_WIZARD = "run_wizard";
 	protected static final String KEY_SCRIPT_DIR = "script_dir";
 	protected static final String KEY_SEARCH_FOLDER = "search_folder";
@@ -3260,5 +3261,14 @@ public class PmsConfiguration {
 
 	public int getWebImgSlideDelay() {
 		return getInt(KEY_WEB_IMAGE_SLIDE, 0);
+	}
+
+	public String getRootLogLevel() {
+		String level = getString(KEY_ROOT_LOG_LEVEL, "DEBUG").toUpperCase();
+		return "ALL TRACE DEBUG INFO WARN ERROR OFF".contains(level) ? level : "DEBUG";
+	}
+
+	public void setRootLogLevel(ch.qos.logback.classic.Level level) {
+		configuration.setProperty(KEY_ROOT_LOG_LEVEL, level.toString());
 	}
 }
