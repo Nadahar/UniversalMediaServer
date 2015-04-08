@@ -77,7 +77,11 @@ public class LibMediaInfoParser {
 				if (isNotBlank(value)) {
 					media.setThumb(getCover(value));
 				}
-				value = MI.Get(StreamType.General, 0, "Attachements");
+				value = MI.Get(general, 0, "Title");
+				if (isNotBlank(value)) {
+					media.setFileTitleFromMetadata(value);
+				}
+				value = MI.Get(general, 0, "Attachements");
 				if (isNotBlank(value)) {
 					media.setEmbeddedFontExists(true);
 				}
@@ -96,19 +100,20 @@ public class LibMediaInfoParser {
 							currentSubTrack.setId(media.getSubtitleTracksList().size());
 							addSub(currentSubTrack, media);
 						} else {
-							getFormat(StreamType.Video, media, currentAudioTrack, MI.Get(StreamType.Video, i, "Format").toLowerCase(), file);
-							getFormat(StreamType.Video, media, currentAudioTrack, MI.Get(StreamType.Video, i, "CodecID").toLowerCase(), file);
-							media.setWidth(getPixelValue(MI.Get(StreamType.Video, i, "Width")));
-							media.setHeight(getPixelValue(MI.Get(StreamType.Video, i, "Height")));
-							media.setFrameRate(getFPSValue(MI.Get(StreamType.Video, i, "FrameRate")));
-							media.setMatrixCoefficients(MI.Get(StreamType.Video, i, "matrix_coefficients"));
-							media.setStereoscopy(MI.Get(StreamType.Video, i, "MultiView_Layout"));
-							media.setAspectRatioContainer(MI.Get(StreamType.Video, i, "DisplayAspectRatio/String"));
-							media.setAspectRatioVideoTrack(MI.Get(StreamType.Video, i, "DisplayAspectRatio_Original/Stri"));
-							media.setFrameRate(getFPSValue(MI.Get(StreamType.Video, i, "FrameRate")));
-							media.setFrameRateMode(getFrameRateModeValue(MI.Get(StreamType.Video, i, "FrameRateMode")));
-							media.setReferenceFrameCount(getReferenceFrameCount(MI.Get(StreamType.Video, i, "Format_Settings_RefFrames/String")));
-							value = MI.Get(StreamType.Video, i, "Format_Settings_QPel", InfoType.Text, InfoType.Name);
+							getFormat(video, media, currentAudioTrack, MI.Get(video, i, "Format").toLowerCase(), file);
+							getFormat(video, media, currentAudioTrack, MI.Get(video, i, "CodecID").toLowerCase(), file);
+							media.setWidth(getPixelValue(MI.Get(video, i, "Width")));
+							media.setHeight(getPixelValue(MI.Get(video, i, "Height")));
+							media.setFrameRate(getFPSValue(MI.Get(video, i, "FrameRate")));
+							media.setMatrixCoefficients(MI.Get(video, i, "matrix_coefficients"));
+							media.setStereoscopy(MI.Get(video, i, "MultiView_Layout"));
+							media.setAspectRatioContainer(MI.Get(video, i, "DisplayAspectRatio/String"));
+							media.setAspectRatioVideoTrack(MI.Get(video, i, "DisplayAspectRatio_Original/Stri"));
+							media.setFrameRate(getFPSValue(MI.Get(video, i, "FrameRate")));
+							media.setFrameRateMode(getFrameRateModeValue(MI.Get(video, i, "FrameRateMode")));
+							media.setReferenceFrameCount(getReferenceFrameCount(MI.Get(video, i, "Format_Settings_RefFrames/String")));
+							media.setVideoTrackTitleFromMetadata(MI.Get(video, i, "Title"));
+							value = MI.Get(video, i, "Format_Settings_QPel", InfoType.Text, InfoType.Name);
 							if (isNotBlank(value)) {
 								media.putExtra(FormatConfiguration.MI_QPEL, value);
 							}
@@ -141,12 +146,21 @@ public class LibMediaInfoParser {
 							unusedStreamType = true;
 						}
 
-						if (!unusedStreamType) {
-							int point = line.indexOf(':');
-							if (point > -1) {
-								String key = line.substring(0, point).trim();
-								String ovalue = line.substring(point + 1).trim();
-								String value = ovalue.toLowerCase();
+				// set Audio
+				int audioTracks = MI.Count_Get(audio);
+				if (audioTracks > 0) {
+					for (int i = 0; i < audioTracks; i++) {
+						currentAudioTrack = new DLNAMediaAudio();
+						getFormat(audio, media, currentAudioTrack, MI.Get(audio, i, "Format").toLowerCase(), file);
+						getFormat(audio, media, currentAudioTrack, MI.Get(audio, i, "Format_Version").toLowerCase(), file);
+						getFormat(audio, media, currentAudioTrack, MI.Get(audio, i, "Format_Profile").toLowerCase(), file);
+						getFormat(audio, media, currentAudioTrack, MI.Get(audio, i, "CodecID").toLowerCase(), file);
+						currentAudioTrack.setLang(getLang(MI.Get(audio, i, "Language/String")));
+						currentAudioTrack.setAudioTrackTitleFromMetadata((MI.Get(audio, i, "Title")).trim());
+						currentAudioTrack.getAudioProperties().setNumberOfChannels(MI.Get(audio, i, "Channel(s)"));
+						currentAudioTrack.setSampleFrequency(getSampleFrequency(MI.Get(audio, i, "SamplingRate")));
+						currentAudioTrack.setBitRate(getBitrate(MI.Get(audio, i, "BitRate")));
+						currentAudioTrack.setSongname(MI.Get(general, 0, "Track"));
 
 								if (key.equals("Format") || key.startsWith("Format_Version") || key.startsWith("Format_Profile")) {
 									if (streamType == MediaInfo.StreamType.Text) {
@@ -288,8 +302,27 @@ public class LibMediaInfoParser {
 					addAudio(currentAudioTrack, media);
 				}
 
-				if (subPrepped) {
-					addSub(currentSubTrack, media);
+				// set Subs in text format
+				int subTracks = MI.Count_Get(text);
+				if (subTracks > 0) {
+					for (int i = 0; i < subTracks; i++) {
+						currentSubTrack = new DLNAMediaSubtitle();
+						currentSubTrack.setType(SubtitleType.valueOfLibMediaInfoCodec(MI.Get(text, i, "Format")));
+						currentSubTrack.setType(SubtitleType.valueOfLibMediaInfoCodec(MI.Get(text, i, "CodecID")));
+						currentSubTrack.setLang(getLang(MI.Get(text, i, "Language/String")));
+						currentSubTrack.setSubtitlesTrackTitleFromMetadata((MI.Get(text, i, "Title")).trim());
+						// Special check for OGM: MediaInfo reports specific Audio/Subs IDs (0xn) while mencoder does not
+						value = MI.Get(text, i, "ID/String");
+						if (isNotBlank(value)) {
+							if (value.contains("(0x") && !FormatConfiguration.OGG.equals(media.getContainer())) {
+								currentSubTrack.setId(getSpecificID(value));
+							} else {
+								currentSubTrack.setId(media.getSubtitleTracksList().size());
+							}
+						}
+
+						addSub(currentSubTrack, media);
+					}
 				}
 
 				/**
@@ -731,6 +764,10 @@ public class LibMediaInfoParser {
 		return value;
 	}
 
+	/**
+	 * @deprecated use trim()
+	 */
+	@Deprecated
 	public static String getFlavor(String value) {
 		value = value.trim();
 		return value;
