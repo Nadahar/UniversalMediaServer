@@ -1,6 +1,9 @@
 4.5.0 - 2015-09-?? - Changes since 4.4.0
 
 	General:
+		Added "log_level" user-level option
+		Added "Create TRACE logs" button
+		Added the ability to restart the program (not just the server)
 		Added support for links in tooltips (thanks, taconaut!)
 		Added support for customizing background and foreground color in tooltips (thanks, taconaut!)
 		Added PrependTrackNumbers renderer option to ensure that renderers order audio by track number
@@ -32,6 +35,7 @@
 		Fixed the web interface when browsing via Safari
 		Improved stability when disabling renderers
 	Renderers:
+		Improved PS3 muxing via tsMuxeR
 		Made Samsung televisions and Blu-ray Disc players order audio by track number
 		Improved support for LG LED-backlit LCD 2014 TVs
 		Improved support for Samsung H6203 TVs
@@ -53,6 +57,12 @@
 		Updated French translation (thanks, Kirvx!)
 		Updated Spanish translation (thanks, AlfredoRamos!)
 	External Components:
+		Updated JDom to 2.0.6
+		Updated Logback to 1.1.3
+		Updated MediaInfo to 0.7.73, which:
+			Added and improved support for many formats
+			Fixed bugs
+		Updated slf4j to 1.7.12
 		Updated Chromecast Java API to 0.0.6
 		Updated Commons Codec to 1.10
 		Updated FEST Util to 1.2.5
