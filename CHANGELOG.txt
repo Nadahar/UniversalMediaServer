@@ -35,6 +35,15 @@
 		Fixed the web interface when browsing via Safari
 		Improved stability when disabling renderers
 	Renderers:
+		Added DSD/DFF streaming support to Cambridge Audio Blu-ray Disc players
+		Added 3gp and 3g2 tags to DefaultRenderer.conf
+		Improved renderer detection/handling
+		Improved Android device detection
+		Improved detection of Panasonic AS600 Series TVs
+		Improved PS3 muxing via tsMuxeR
+		Improved support for Samsung D6400 TVs
+		Improved support for Samsung EH5300 TVs
+		Fixed support for MP3 files on some Samsung TVs and Blu-ray Disc players
 		Improved PS3 muxing via tsMuxeR
 		Made Samsung televisions and Blu-ray Disc players order audio by track number
 		Improved support for LG LED-backlit LCD 2014 TVs
