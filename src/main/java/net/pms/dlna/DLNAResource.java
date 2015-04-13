@@ -530,6 +530,47 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 					addResumeFile = true;
 				}
 
+				boolean parserV2 = child.media != null && defaultRenderer != null && defaultRenderer.isMediaParserV2();
+				if (parserV2) {
+					// See which mime type the renderer prefers in case it supports the media
+					String mimeType = defaultRenderer.getFormatConfiguration().match(child.media);
+					if (mimeType != null) {
+						// Media is streamable
+						if (child.format.isVideo()) {
+							if (!configuration.isDisableSubtitles() && child.hasExternalSubtitles() && defaultRenderer.isSubtitlesStreamingSupported()) {
+								OutputParams params = new OutputParams(configuration);
+								Player.setAudioAndSubs(child.getSystemName(), child.media, params); // set proper subtitles in accordance with user setting
+								if (params.sid.isExternal() && defaultRenderer.isExternalSubtitlesFormatSupported(params.sid)) {
+									child.media_subtitle = params.sid;
+									child.media_subtitle.setSubsStreamable(true);
+									LOGGER.trace("Set media_subtitle");
+								} else {
+									LOGGER.trace("Did not set media_subtitle because the subtitle format is not supported by this renderer");
+								}
+							} else {
+								LOGGER.trace("Did not set media_subtitle because configuration.isDisableSubtitles is true, this is not a subtitle, or the renderer does not support streaming subtitles");
+							}
+						}
+
+						/**
+						 * Use the renderer's preferred MIME type for this file.
+						 */
+						if (!FormatConfiguration.MIMETYPE_AUTO.equals(mimeType)) {
+							if (!child.media.getMimeType().equals(mimeType)) {
+								LOGGER.trace("Using renderer-defined MIME type \"{}\" instead of \"{}\" for \"{}\"", mimeType, child.media.getMimeType(), child.getName());
+							}
+							child.media.setMimeType(mimeType);
+						}
+
+						LOGGER.trace("File \"{}\" can be streamed with mime type \"{}\"", child.getName(), child.media.getMimeType());
+					} else {
+						// Media is transcodable
+						LOGGER.trace("File \"{}\" can be transcoded", child.getName());
+					}
+				} else if (child.media != null && defaultRenderer != null && child.format.isVideo()) {
+					LOGGER.trace("Did not check for media_subtitle for \"{}\" because {} does not use MediaInfo, we will check for it soon", child.getName(), defaultRenderer);
+				}
+
 				if (child.format != null) {
 					String configurationSkipExtensions = configuration.getDisableTranscodeForExtensions();
 					String rendererSkipExtensions = null;
