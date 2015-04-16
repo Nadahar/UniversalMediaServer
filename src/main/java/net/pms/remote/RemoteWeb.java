@@ -24,7 +24,6 @@ import org.slf4j.LoggerFactory;
 
 public class RemoteWeb {
 	private static final Logger LOGGER = LoggerFactory.getLogger(RemoteWeb.class);
-	private static final int DEFAULT_PORT = 9001;
 	private KeyStore ks;
 	private KeyManagerFactory kmf;
 	private TrustManagerFactory tmf;
@@ -34,14 +33,16 @@ public class RemoteWeb {
 	private HashMap<String, String> tags;
 	private HashMap<String, RootFolder> roots;
 	private static final PmsConfiguration configuration = PMS.getConfiguration();
+	private static final int defaultPort = configuration.getWebPort();
+	
 
 	public RemoteWeb() {
-		this(DEFAULT_PORT);
+		this(defaultPort);
 	}
 
 	public RemoteWeb(int port) {
 		if (port <= 0) {
-			port = DEFAULT_PORT;
+			port = defaultPort;
 		}
 
 		users = new HashMap<>();

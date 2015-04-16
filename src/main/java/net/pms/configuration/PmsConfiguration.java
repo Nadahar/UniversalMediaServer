@@ -3223,8 +3223,12 @@ public class PmsConfiguration {
 		return getBoolean(KEY_WEB_MP4_TRANS, false);
 	}
 
+	/**
+	 * Default port for the WEB interface is 80. When there is a conflict with
+	 * other WEB server it could be changed to the recommended value 9001
+	 */
 	public int getWebPort() {
-		return getInt(KEY_WEB_PORT, 0);
+		return getInt(KEY_WEB_PORT, 80);
 	}
 
 	public boolean useWebInterface() {
