@@ -671,10 +671,7 @@ public class PMS {
 			return false;
 		}
 
-		// Web stuff
-		if (configuration.useWebInterface()) {
-			web = new RemoteWeb(configuration.getWebPort());
-		}
+		LOGGER.info("WEB interface is available at: http://" + web.getAddress());
 
 		// initialize the cache
 		if (configuration.getUseCache()) {
