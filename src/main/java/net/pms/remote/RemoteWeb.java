@@ -57,8 +57,15 @@ public class RemoteWeb {
 
 			// initialise the HTTP(S) server
 			if (configuration.getWebHttps()) {
-				server = httpsServer(address);
-			} else {
+				try {
+					server = httpsServer(address);
+				} catch (Exception e) {
+					LOGGER.warn("Error: Failed to start WEB interface on HTTPS: " + e);
+					LOGGER.warn("Starting WEB interface on HTTP instead.");
+					server = null;
+				}
+			}
+			if (server == null) {
 				server = HttpServer.create(address, 0);
 			}
 
@@ -82,10 +89,6 @@ public class RemoteWeb {
 	}
 
 	private HttpServer httpsServer(InetSocketAddress address) throws Exception {
-		HttpsServer server = HttpsServer.create(address, 0);
-
-		sslContext = SSLContext.getInstance("TLS");
-
 		// Initialize the keystore
 		char[] password = "umsums".toCharArray();
 		ks = KeyStore.getInstance("JKS");
@@ -100,6 +103,8 @@ public class RemoteWeb {
 		tmf = TrustManagerFactory.getInstance("SunX509");
 		tmf.init(ks);
 
+		HttpsServer server = HttpsServer.create(address, 0);
+		sslContext = SSLContext.getInstance("TLS");
 		sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
 
 		server.setHttpsConfigurator(new HttpsConfigurator(sslContext) {
@@ -376,7 +381,10 @@ public class RemoteWeb {
 	}
 
 	public String getUrl() {
-		return (server instanceof HttpsServer ? "https://" : "http://") +
-			PMS.get().getServer().getHost() + ":" + server.getAddress().getPort();
+		if (server != null) {
+			return (server instanceof HttpsServer ? "https://" : "http://") +
+				PMS.get().getServer().getHost() + ":" + server.getAddress().getPort();
+		}
+		return null;
 	}
 }
