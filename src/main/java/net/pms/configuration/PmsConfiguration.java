@@ -101,30 +101,33 @@ public class PmsConfiguration {
 	private static final String KEY_DISABLE_FAKESIZE = "disable_fakesize";
 	public    static final String KEY_DISABLE_SUBTITLES = "disable_subtitles";
 	protected static final String KEY_DISABLE_TRANSCODE_FOR_EXTENSIONS = "disable_transcode_for_extensions";
-	private static final String KEY_DVDISO_THUMBNAILS = "dvd_isos_thumbnails";
-	private static final String KEY_AUDIO_EMBED_DTS_IN_PCM = "audio_embed_dts_in_pcm";
-	private static final String KEY_ENCODED_AUDIO_PASSTHROUGH = "encoded_audio_passthrough";
-	private static final String KEY_ENGINES = "engines";
-	private static final String KEY_FFMPEG_ALTERNATIVE_PATH = "alternativeffmpegpath"; // TODO: FFmpegDVRMSRemux will be removed and DVR-MS will be transcoded
-	private static final String KEY_FFMPEG_MULTITHREADING = "ffmpeg_multithreading";
-	private static final String KEY_FFMPEG_AVISYNTH_MULTITHREADING = "ffmpeg_avisynth_multithreading";
-	private static final String KEY_FFMPEG_AVISYNTH_CONVERT_FPS = "ffmpeg_avisynth_convertfps";
-	private static final String KEY_FFMPEG_AVISYNTH_INTERFRAME = "ffmpeg_avisynth_interframe";
-	private static final String KEY_FFMPEG_AVISYNTH_INTERFRAME_GPU = "ffmpeg_avisynth_interframegpu";
-	private static final String KEY_FFMPEG_FONTCONFIG = "ffmpeg_fontconfig";
-	private static final String KEY_FFMPEG_MUX_TSMUXER_COMPATIBLE = "ffmpeg_mux_tsmuxer_compatible";
-	private static final String KEY_FFMPEG_MENCODER_SUBTITLES = "ffmpeg_mencoder_subtitles";
-	private static final String KEY_FIX_25FPS_AV_MISMATCH = "fix_25fps_av_mismatch";
-	private static final String KEY_FOLDERS = "folders";
-	private static final String KEY_FOLDERS_IGNORED = "folders_ignored";
-	private static final String KEY_FOLDERS_MONITORED = "folders_monitored";
-	private static final String KEY_FONT = "subtitles_font";
-	private static final String KEY_FORCED_SUBTITLE_LANGUAGE = "forced_subtitle_language";
-	private static final String KEY_FORCED_SUBTITLE_TAGS = "forced_subtitle_tags";
-	private static final String KEY_FORCE_EXTERNAL_SUBTITLES = "force_external_subtitles";
-	private static final String KEY_FORCE_TRANSCODE_FOR_EXTENSIONS = "force_transcode_for_extensions";
-	private static final String KEY_FOLDER_LIMIT = "folder_limit";
-	public static final String KEY_GPU_ACCELERATION = "gpu_acceleration";
+	protected static final String KEY_DVDISO_THUMBNAILS = "dvd_isos_thumbnails";
+	protected static final String KEY_DYNAMIC_PLS = "dynamic_playlist";
+	protected static final String KEY_DYNAMIC_PLS_AUTO_SAVE = "dynamic_playlist_auto_save";
+	protected static final String KEY_DYNAMIC_PLS_HIDE = "dynamic_playlist_hide_folder";
+	protected static final String KEY_DYNAMIC_PLS_SAVE_PATH = "dynamic_playlist_save_path";
+	protected static final String KEY_ENCODED_AUDIO_PASSTHROUGH = "encoded_audio_passthrough";
+	protected static final String KEY_ENGINES = "engines";
+	protected static final String KEY_FFMPEG_ALTERNATIVE_PATH = "alternativeffmpegpath"; // TODO: FFmpegDVRMSRemux will be removed and DVR-MS will be transcoded
+	protected static final String KEY_FFMPEG_AVISYNTH_CONVERT_FPS = "ffmpeg_avisynth_convertfps";
+	protected static final String KEY_FFMPEG_AVISYNTH_INTERFRAME = "ffmpeg_avisynth_interframe";
+	protected static final String KEY_FFMPEG_AVISYNTH_INTERFRAME_GPU = "ffmpeg_avisynth_interframegpu";
+	protected static final String KEY_FFMPEG_AVISYNTH_MULTITHREADING = "ffmpeg_avisynth_multithreading";
+	protected static final String KEY_FFMPEG_FONTCONFIG = "ffmpeg_fontconfig";
+	protected static final String KEY_FFMPEG_MENCODER_PROBLEMATIC_SUBTITLES = "ffmpeg_mencoder_problematic_subtitles";
+	protected static final String KEY_FFMPEG_MULTITHREADING = "ffmpeg_multithreading";
+	protected static final String KEY_FFMPEG_MUX_TSMUXER_COMPATIBLE = "ffmpeg_mux_tsmuxer_compatible";
+	protected static final String KEY_FIX_25FPS_AV_MISMATCH = "fix_25fps_av_mismatch";
+	protected static final String KEY_FOLDER_LIMIT = "folder_limit";
+	protected static final String KEY_FOLDERS = "folders";
+	protected static final String KEY_FOLDERS_IGNORED = "folders_ignored";
+	protected static final String KEY_FOLDERS_MONITORED = "folders_monitored";
+	protected static final String KEY_FONT = "subtitles_font";
+	protected static final String KEY_FORCE_EXTERNAL_SUBTITLES = "force_external_subtitles";
+	protected static final String KEY_FORCE_TRANSCODE_FOR_EXTENSIONS = "force_transcode_for_extensions";
+	protected static final String KEY_FORCED_SUBTITLE_LANGUAGE = "forced_subtitle_language";
+	protected static final String KEY_FORCED_SUBTITLE_TAGS = "forced_subtitle_tags";
+	public    static final String KEY_GPU_ACCELERATION = "gpu_acceleration";
 	protected static final String KEY_HIDE_ADVANCED_OPTIONS = "hide_advanced_options";
 	protected static final String KEY_HIDE_EMPTY_FOLDERS = "hide_empty_folders";
 	protected static final String KEY_HIDE_ENGINENAMES = "hide_enginenames";
@@ -2383,23 +2386,43 @@ public class PmsConfiguration {
 	}
 
 	/**
-	 * Whether FFmpegVideo should defer to MEncoderVideo when there are
-	 * subtitles that need to be transcoded.
-	 *
-	 * @param value
+	 * @see #setFFmpegDeferToMEncoderForEmbeddedSubtitles(boolean)
+	 * @deprecated
 	 */
+	@Deprecated
 	public void setFFmpegDeferToMEncoderForSubtitles(boolean value) {
-		configuration.setProperty(KEY_FFMPEG_MENCODER_SUBTITLES, value);
+		setFFmpegDeferToMEncoderForProblematicSubtitles(value);
+	}
+
+	/**
+	 * @see #isFFmpegDeferToMEncoderForEmbeddedSubtitles() 
+	 * @deprecated
+	 */
+	@Deprecated
+	public boolean isFFmpegDeferToMEncoderForSubtitles() {
+		return isFFmpegDeferToMEncoderForProblematicSubtitles();
 	}
 
 	/**
 	 * Whether FFmpegVideo should defer to MEncoderVideo when there are
-	 * subtitles that need to be transcoded.
+	 * subtitles that need to be transcoded which FFmpeg will need to
+	 * initially parse, which can cause timeouts.
+	 *
+	 * @param value
+	 */
+	public void setFFmpegDeferToMEncoderForProblematicSubtitles(boolean value) {
+		configuration.setProperty(KEY_FFMPEG_MENCODER_PROBLEMATIC_SUBTITLES, value);
+	}
+
+	/**
+	 * Whether FFmpegVideo should defer to MEncoderVideo when there are
+	 * subtitles that need to be transcoded which FFmpeg will need to
+	 * initially parse, which can cause timeouts.
 	 *
 	 * @return
 	 */
-	public boolean isFFmpegDeferToMEncoderForSubtitles() {
-		return getBoolean(KEY_FFMPEG_MENCODER_SUBTITLES, true);
+	public boolean isFFmpegDeferToMEncoderForProblematicSubtitles() {
+		return getBoolean(KEY_FFMPEG_MENCODER_PROBLEMATIC_SUBTITLES, true);
 	}
 
 	public void setFFmpegFontConfig(boolean value) {

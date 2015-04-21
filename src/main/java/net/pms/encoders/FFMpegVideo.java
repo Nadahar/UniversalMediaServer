@@ -808,7 +808,7 @@ public class FFMpegVideo extends Player {
 			)
 		) {
 			boolean deferToMencoder = false;
-			if (configuration.isFFmpegDeferToMEncoderForSubtitles()) {
+			if (configuration.isFFmpegDeferToMEncoderForProblematicSubtitles()) {
 				deferToMencoder = true;
 				LOGGER.trace(prependTraceReason + "the user setting is enabled.");
 			} else if (media.isEmbeddedFontExists()) {
@@ -1203,13 +1203,13 @@ public class FFMpegVideo extends Player {
 		});
 		builder.add(fc, cc.xy(2, 7));
 
-		deferToMEncoderForSubtitles = new JCheckBox(Messages.getString("FFmpeg.1"), configuration.isFFmpegDeferToMEncoderForSubtitles());
+		deferToMEncoderForSubtitles = new JCheckBox(Messages.getString("FFmpeg.1"), configuration.isFFmpegDeferToMEncoderForProblematicSubtitles());
 		deferToMEncoderForSubtitles.setContentAreaFilled(false);
 		deferToMEncoderForSubtitles.setToolTipText(Messages.getString("FFmpeg.2"));
 		deferToMEncoderForSubtitles.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
-				configuration.setFFmpegDeferToMEncoderForSubtitles(e.getStateChange() == ItemEvent.SELECTED);
+				configuration.setFFmpegDeferToMEncoderForProblematicSubtitles(e.getStateChange() == ItemEvent.SELECTED);
 			}
 		});
 		builder.add(deferToMEncoderForSubtitles, cc.xy(2, 9));
