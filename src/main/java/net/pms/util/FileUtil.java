@@ -652,6 +652,9 @@ public class FileUtil {
 
 	private static String externalSubsLang;
 
+	/**
+	 * Get the language of the external subtitles file detected by {@link #getFileCharset(File file)} method
+	 */
 	public static String getExtSubsLang() {
 		return externalSubsLang;
 	}
