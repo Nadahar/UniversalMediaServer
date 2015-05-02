@@ -2,6 +2,12 @@
 
 	General:
 		Fixed videos being muxed instead of streamed
+		Added and improved documentation in UMS.conf and DefaultRenderer.conf
+		Added the URL for the web interface to the logs on the Logs tab
+		Improved detection of the H.263 codec (thanks, leroy!)
+		Improved stability when transcoding subtitles by default
+		Simplified MEncoder commands in some situations
+		Fixed bugs
 		Added "log_level" user-level option
 		Added "Create TRACE logs" button
 		Added the ability to restart the program (not just the server)
@@ -36,6 +42,10 @@
 		Fixed the web interface when browsing via Safari
 		Improved stability when disabling renderers
 	Renderers:
+		Improves support for Samsung EH5300 TVs (thanks, panzer!)
+		Fixed initial folders bug on Xbox 360/One
+		Improved detection of Xbox One
+		Improved detection of several Samsung TVs
 		Added DSD/DFF streaming support to Cambridge Audio Blu-ray Disc players
 		Added more tags to DefaultRenderer.conf
 		Improved support for transcoding to Technisat S1+
@@ -62,6 +72,7 @@
 		Updated the image for Xbox 360
 		Fixed 24-bit FLAC playback on PS3 via the Videos folder
 	Languages:
+		Updated Spanish translation (thanks, AlfredoRamos!)
 		Made more strings translatable
 		Updated Czech translation
 		Updated Italian translation (thanks, bartsimp!)
