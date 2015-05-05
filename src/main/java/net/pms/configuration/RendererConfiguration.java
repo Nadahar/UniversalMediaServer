@@ -160,6 +160,7 @@ public class RendererConfiguration {
 	private static final String WRAP_ENCODED_AUDIO_INTO_PCM = "WrapEncodedAudioIntoPCM";
 
 	private static int maximumBitrateTotal = 0;
+	public static final String UNKNOWN_ICON = "unknown.png";
 
 	public static RendererConfiguration getDefaultConf() {
 		return defaultConf;
@@ -876,15 +877,11 @@ public class RendererConfiguration {
 
 	/**
 	 * Returns the icon to use for displaying this renderer in PMS as defined
-	 * in the renderer configurations. Default value is "unknown.png".
+	 * in the renderer configurations. Default value is UNKNOWN_ICON.
 	 *
 	 * @return The renderer icon.
 	 */
 	public String getRendererIcon() {
-		return getString(RENDERER_ICON, "unknown.png");
-	}
-
-	public String getDefaultIcon() {
 		return getString(RENDERER_ICON, "unknown.png");
 	}
 
