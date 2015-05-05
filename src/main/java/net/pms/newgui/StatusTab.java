@@ -198,6 +198,21 @@ public class StatusTab {
 		BufferedImage bi = null;
 
 		if (icon != null) {
+
+			if (icon.matches(".*\\S+://.*")) {
+				try {
+					bi = ImageIO.read(new URL(icon));
+				} catch (Exception e) {
+					LOGGER.debug("Error reading icon url: " + e);
+				}
+				if (bi != null) {
+					return bi;
+				} else {
+					LOGGER.debug("Unable to read icon url \"{}\", using 'unknown.png' instead.", icon);
+					icon = "unknown.png";
+				}
+			}
+
 			try {
 				InputStream is = null;
 
@@ -241,6 +256,11 @@ public class StatusTab {
 				LOGGER.debug("Caught exception", e);
 			}
 		}
+		if (bi == null) {
+			LOGGER.debug("Failed to load icon: " + icon);
+		}
+		return bi;
+	}
 
 		if (bi != null) {
 			renderers[numRenderers].set(bi);

@@ -884,6 +884,10 @@ public class RendererConfiguration {
 		return getString(RENDERER_ICON, "unknown.png");
 	}
 
+	public String getDefaultIcon() {
+		return getString(RENDERER_ICON, "unknown.png");
+	}
+
 	/**
 	 * Returns the the name of an additional HTTP header whose value should
 	 * be matched with the additional header search pattern. The header name
