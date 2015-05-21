@@ -2,6 +2,8 @@
 
 	General:
 		Fixed videos being muxed instead of streamed
+		Limits clickable areas of settings more precisely
+		Uses a default renderer image when none exist
 		Added and improved documentation in UMS.conf and DefaultRenderer.conf
 		Added the URL for the web interface to the logs on the Logs tab
 		Improved detection of the H.263 codec (thanks, leroy!)
@@ -72,6 +74,7 @@
 		Updated the image for Xbox 360
 		Fixed 24-bit FLAC playback on PS3 via the Videos folder
 	Languages:
+		Updated French translation (thanks, Kirvx!)
 		Updated Spanish translation (thanks, AlfredoRamos!)
 		Made more strings translatable
 		Updated Czech translation
@@ -79,6 +82,11 @@
 		Updated French translation (thanks, Kirvx!)
 		Updated Spanish translation (thanks, AlfredoRamos!)
 	External Components:
+		Updated FFmpeg for Windows, which:
+			Improved support for many containers and codecs
+			Fixed bugs
+		Updated InterFrame to 2.8.2, which:
+			Improved speed
 		Updated Maven AntRun Plugin to 1.8
 		Updated Maven Findbugs Plugin to 3.0.1
 		Updated Maven Git Commit ID Plugin to 2.1.13
