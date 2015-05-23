@@ -374,10 +374,14 @@ public class FFMpegVideo extends Player {
 				} else {
 					transcodeOptions.add("libx265");
 				}
-				transcodeOptions.add("-preset");
-				transcodeOptions.add("superfast");
-				transcodeOptions.add("-level");
-				transcodeOptions.add("31");
+				if (!customFFmpegOptions.contains("-preset")) {
+					transcodeOptions.add("-preset");
+					transcodeOptions.add("ultrafast");
+				}
+				if (!customFFmpegOptions.contains("-level")) {
+					transcodeOptions.add("-level");
+					transcodeOptions.add("31");
+				}
 				transcodeOptions.add("-pix_fmt");
 				transcodeOptions.add("yuv420p");
 			} else if (!dtsRemux) {
