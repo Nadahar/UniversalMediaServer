@@ -4,6 +4,7 @@
 		Fixed videos being muxed instead of streamed
 		Limits clickable areas of settings more precisely
 		Uses a default renderer image when none exist
+		Made H.264 transcoding faster
 		Added and improved documentation in UMS.conf and DefaultRenderer.conf
 		Added the URL for the web interface to the logs on the Logs tab
 		Improved detection of the H.263 codec (thanks, leroy!)
@@ -44,6 +45,7 @@
 		Fixed the web interface when browsing via Safari
 		Improved stability when disabling renderers
 	Renderers:
+		Improved support for Panasonic VT60 TVs
 		Improves support for Samsung EH5300 TVs (thanks, panzer!)
 		Fixed initial folders bug on Xbox 360/One
 		Improved detection of Xbox One
