@@ -84,7 +84,9 @@
 		Updated French translation (thanks, Kirvx!)
 		Updated Spanish translation (thanks, AlfredoRamos!)
 	External Components:
-		Updated FFmpeg for Windows, which:
+		Updated MediaInfo to 0.7.74, which:
+			Improved detection of file information
+		Updated FFmpeg to builds from 20150521, which:
 			Improved support for many containers and codecs
 			Fixed bugs
 		Updated InterFrame to 2.8.2, which:
