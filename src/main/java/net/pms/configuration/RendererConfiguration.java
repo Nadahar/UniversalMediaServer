@@ -31,6 +31,8 @@ import net.pms.network.SpeedStats;
 import net.pms.util.PropertiesUtil;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.io.Charsets;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.WordUtils;
 import org.apache.commons.lang3.StringUtils;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -1099,9 +1101,20 @@ public class RendererConfiguration {
 	 */
 	public String getCustomFFmpegMPEG2Options() {
 		String mpegSettings = getCustomMEncoderMPEG2Options();
+		if (StringUtils.isBlank(mpegSettings)) {
+			return "";
+		}
 
+		return convertMencoderSettingToFFmpegFormat(mpegSettings);
+	}
+
+	/**
+	 * Converts the MEncoder's quality settings format to FFmpeg's.
+	 *
+	 * @return The FFmpeg format.
+	 */
+	public String convertMencoderSettingToFFmpegFormat(String mpegSettings) {
 		String mpegSettingsArray[] = mpegSettings.split(":");
-
 		String pairArray[];
 		StringBuilder returnString = new StringBuilder();
 		for (String pair : mpegSettingsArray) {
@@ -1716,7 +1729,7 @@ public class RendererConfiguration {
 			bitrate = bitrate.substring(0, bitrate.indexOf('(')).trim();
 		}
 
-		if (isBlank(bitrate)) {
+		if (StringUtils.isBlank(bitrate)) {
 			bitrate = "0";
 		}
 
