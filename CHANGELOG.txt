@@ -1,6 +1,8 @@
 4.5.0 - 2015-09-?? - Changes since 4.4.0
 
 	General:
+		Improved stability and speed with large amounts of images
+		Expanded code testing coverage (thanks, Jensaarai!)
 		Fixed videos being muxed instead of streamed
 		Limits clickable areas of settings more precisely
 		Uses a default renderer image when none exist
@@ -84,6 +86,11 @@
 		Updated French translation (thanks, Kirvx!)
 		Updated Spanish translation (thanks, AlfredoRamos!)
 	External Components:
+		Updated Maven Assembly Plugin to 2.5.4
+		Updated Maven Compiler Plugin to 3.3
+		Updated Maven Git Commit ID Plugin to 2.1.15
+		Updated Maven Javadoc Plugin to 2.10.3
+		Updated Maven Surefire Plugin to 2.18.1
 		Updated MediaInfo to 0.7.74, which:
 			Improved detection of file information
 		Updated FFmpeg to builds from 20150521, which:
