@@ -1,6 +1,8 @@
 4.5.0 - 2015-09-?? - Changes since 4.4.0
 
 	General:
+		Improved detection of languages
+		Improved filename prettifying
 		Improved stability and speed with large amounts of images
 		Expanded code testing coverage (thanks, Jensaarai!)
 		Fixed videos being muxed instead of streamed
