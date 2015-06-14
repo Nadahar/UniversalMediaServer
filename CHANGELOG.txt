@@ -49,7 +49,7 @@
 		Fixed the web interface when browsing via Safari
 		Improved stability when disabling renderers
 	Renderers:
-		Improved support for Panasonic VT60 TVs
+		Improved support for DTS audio on Panasonic VT60 TVs
 		Improves support for Samsung EH5300 TVs (thanks, panzer!)
 		Fixed initial folders bug on Xbox 360/One
 		Improved detection of Xbox One
@@ -93,13 +93,11 @@
 		Updated Maven Git Commit ID Plugin to 2.1.15
 		Updated Maven Javadoc Plugin to 2.10.3
 		Updated Maven Surefire Plugin to 2.18.1
-		Updated MediaInfo to 0.7.74, which:
-			Improved detection of file information
+		Updated MediaInfo to 0.7.74, which improved detection of file information
 		Updated FFmpeg to builds from 20150521, which:
 			Improved support for many containers and codecs
 			Fixed bugs
-		Updated InterFrame to 2.8.2, which:
-			Improved speed
+		Updated InterFrame to 2.8.2, which improved speed
 		Updated Maven AntRun Plugin to 1.8
 		Updated Maven Findbugs Plugin to 3.0.1
 		Updated Maven Git Commit ID Plugin to 2.1.13
