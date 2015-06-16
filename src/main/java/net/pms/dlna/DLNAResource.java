@@ -2312,10 +2312,7 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 					}
 					if (media.getResolution() != null) {
 						if (player != null && mediaRenderer.isKeepAspectRatio()) {
-							int scaleWidth = media.getWidth();
-							int scaleHeight = media.getHeight();
-							getResolutionForKeepAR(scaleWidth, scaleHeight);
-							addAttribute(sb, "resolution", scaleWidth + "x" + scaleHeight);
+							addAttribute(sb, "resolution", getResolutionForKeepAR(media.getWidth(), media.getHeight()));
 						} else {
 							addAttribute(sb, "resolution", media.getResolution());
 						}
@@ -3773,8 +3770,247 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 	}
 
 
-	public void getResolutionForKeepAR(int scaleWidth, int scaleHeight) {
-		double videoAspectRatio = (double) media.getWidth() / (double) media.getHeight();
+	// Attempts to automatically create the appropriate container for
+	// the given uri. Defaults to mpeg video for indeterminate local uris.
+	public static DLNAResource autoMatch(String uri, String name) {
+		try {
+			uri = URLDecoder.decode(uri, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			LOGGER.error("URL decoding error ", e);
+		}
+		boolean isweb = uri.matches("\\S+://.+");
+		Format f = FormatFactory.getAssociatedFormat(isweb ? "." + FileUtil.getUrlExtension(uri) : uri);
+		int type = f == null ? Format.VIDEO : f.getType();
+		if (name == null) {
+			name = new File(StringUtils.substringBefore(uri, "?")).getName();
+		}
+		DLNAResource d = isweb ?
+			type == Format.VIDEO ? new WebVideoStream(name, uri, null) :
+			type == Format.AUDIO ? new WebAudioStream(name, uri, null) :
+			type == Format.IMAGE ? new FeedItem(name, uri, null, null, Format.IMAGE) : null
+			:
+			new RealFile(new File(uri));
+		if (f == null && !isweb) {
+			d.setFormat(FormatFactory.getAssociatedFormat(".mpg"));
+		}
+		LOGGER.debug(d == null ?
+			("Could not auto-match " + uri) :
+			("Created auto-matched container: "+ d));
+		return d;
+	}
+
+	// A general-purpose free-floating folder
+	public static class unattachedFolder extends VirtualFolder {
+		public unattachedFolder(String name) {
+			super(name, null);
+			setId(name);
+		}
+
+		public DLNAResource add(DLNAResource d) {
+			if (d != null) {
+				addChild(d);
+				d.setId(d.getId() + "$" + getId());
+				return d;
+			}
+			return null;
+		}
+
+		public DLNAResource add(String uri, String name, RendererConfiguration r) {
+			DLNAResource  d = autoMatch(uri, name);
+			if (d != null) {
+				// Set the auto-matched item's renderer
+				d.setDefaultRenderer(r);
+				// Cache our previous renderer and
+				// pretend to be a parent with the same renderer
+				RendererConfiguration prev = getDefaultRenderer();
+				setDefaultRenderer(r);
+				// Now add the item and resolve its rendering details
+				add(d);
+				d.resolve();
+				// Restore our previous renderer
+				setDefaultRenderer(prev);
+			}
+			return d;
+		}
+
+		public int getIndex(String objectId) {
+			return getIndex(objectId, null);
+		}
+
+		public int getIndex(String objectId, RendererConfiguration r) {
+			int index = indexOf(objectId);
+			if (index == -1 && r != null) {
+				index = indexOf(recreate(objectId, null, r).getResourceId());
+			}
+			return index;
+		}
+
+		public DLNAResource get(String objectId, RendererConfiguration r) {
+			int index = getIndex(objectId, r);
+			DLNAResource d = index > -1 ? getChildren().get(index) : null;
+			if (d != null && r != null && ! r.equals(d.getDefaultRenderer())) {
+				d.updateRendering(r);
+			}
+			return d;
+		}
+
+		public List<DLNAResource> asList(String objectId) {
+			int index = getIndex(objectId);
+			return index > -1 ? getChildren().subList(index, index + 1) : null;
+		}
+
+		// Try to recreate a lost item from a previous session
+		// using its objectId's trailing uri, if any
+
+		public DLNAResource recreate(String objectId, String name, RendererConfiguration r) {
+			try {
+				return add(StringUtils.substringAfter(objectId, "/"), name, r);
+			} catch (Exception e) {
+				return null;
+			}
+		}
+	}
+
+	// A temp folder for non-xmb items
+	public static final unattachedFolder Temp = new unattachedFolder("Temp");
+
+	// Returns whether the url appears to be ours
+	public static boolean isResourceUrl(String url) {
+		return url != null && url.startsWith(PMS.get().getServer().getURL() + "/get/");
+	}
+
+	// Returns the url's resourceId (i.e. index without trailing filename) if any or null
+	public static String parseResourceId(String url) {
+		return isResourceUrl(url) ? StringUtils.substringBetween(url + "/", "get/", "/") : null;
+	}
+
+	// Returns the url's objectId (i.e. index including trailing filename) if any or null
+	public static String parseObjectId(String url) {
+		return isResourceUrl(url) ? StringUtils.substringAfter(url, "get/") : null;
+	}
+
+	// Returns the DLNAResource pointed to by the uri if it exists
+	// or else a new Temp item (or null)
+	public static DLNAResource getValidResource(String uri, String name, RendererConfiguration r) {
+		LOGGER.debug("Validating uri " + uri);
+		String objectId = parseObjectId(uri);
+		if (objectId != null) {
+			if (objectId.startsWith("Temp$")) {
+				int index = Temp.indexOf(objectId);
+				return index > -1 ? Temp.getChildren().get(index) : Temp.recreate(objectId, name, r);
+			} else {
+				if (r == null) {
+					r = RendererConfiguration.getDefaultConf();
+				}
+				return PMS.get().getRootFolder(r).getDLNAResource(objectId, r);
+
+			}
+		} else {
+			return Temp.add(uri, name, r);
+		}
+	}
+
+	// Returns the uri if it's ours and exists or else the url of new Temp item (or null)
+	public static String getValidResourceURL(String uri, String name, RendererConfiguration r) {
+		if (isResourceUrl(uri)) {
+			// Check existence
+			return PMS.get().getGlobalRepo().exists(parseResourceId(uri)) ? uri : null; // TODO: attempt repair
+		} else {
+			DLNAResource d = Temp.add(uri, name, r);
+			if (d != null) {
+				return d.getURL("", true);
+			}
+		}
+		return null;
+	}
+
+	public static class Rendering {
+		RendererConfiguration r;
+		Player p;
+		DLNAMediaSubtitle s;
+		Rendering(DLNAResource d) {
+			r = d.getDefaultRenderer();
+			p = d.getPlayer();
+			s = d.getMediaSubtitle();
+		}
+	}
+
+	public Rendering updateRendering(RendererConfiguration r) {
+		Rendering rendering = new Rendering(this);
+		Player p = resolvePlayer(r);
+		LOGGER.debug("Switching rendering context to '{} [{}]' from '{} [{}]'", r, p, rendering.r, rendering.p);
+		setDefaultRenderer(r);
+		setPlayer(p);
+		return rendering;
+	}
+
+	public void updateRendering(Rendering rendering) {
+		LOGGER.debug("Switching rendering context to '{} [{}]' from '{} [{}]'", rendering.r, rendering.p, getDefaultRenderer(), getPlayer());
+		setDefaultRenderer(rendering.r);
+		setPlayer(rendering.p);
+		media_subtitle = rendering.s;
+	}
+
+	public DLNAResource isCoded() {
+		DLNAResource tmp = this;
+		while (tmp != null) {
+			if (tmp instanceof CodeEnter) {
+				return tmp;
+			}
+			tmp = tmp.getParent();
+		}
+		return null;
+	}
+
+	public boolean isCodeValid(DLNAResource r) {
+		DLNAResource res = r.isCoded();
+		if (res != null) {
+			if (res instanceof CodeEnter) {
+				return ((CodeEnter) res).validCode(r);
+			}
+		}
+		// normal case no code in path code is always valid
+		return true;
+	}
+
+	public boolean quietPlay() {
+		return false;
+	}
+
+	public long getStartTime() {
+		return startTime;
+	}
+
+	private void addDynamicPls(final DLNAResource child) {
+		final DLNAResource dynPls = PMS.get().getDynamicPls();
+		if (dynPls == child || child.getParent() == dynPls) {
+			return;
+		}
+		if (child instanceof VirtualVideoAction) {
+			// ignore these
+			return;
+		}
+		if (dynamicPls == null) {
+			dynamicPls = new VirtualFolder(Messages.getString("PMS.147"), null);
+			addChildInternal(dynamicPls);
+			dynamicPls.addChild(dynPls);
+		}
+		if (dynamicPls != null) {
+			String str = Messages.getString("PluginTab.9") + " " + child.getDisplayName() + " " + Messages.getString("PMS.148");
+			VirtualVideoAction vva = new VirtualVideoAction(str, true) {
+				@Override
+				public boolean enable() {
+					PMS.get().getDynamicPls().add(child);
+					return true;
+				}
+			};
+			vva.setParent(this);
+			dynamicPls.addChildInternal(vva);
+		}
+	}
+
+	public String getResolutionForKeepAR(int scaleWidth, int scaleHeight) {
+		double videoAspectRatio = (double) scaleWidth / (double) scaleHeight;
 		double rendererAspectRatio = 1.777777777777778;
 		if (videoAspectRatio > rendererAspectRatio) {
 			scaleHeight = (int) Math.round(scaleWidth / rendererAspectRatio);
@@ -3782,7 +4018,8 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 			scaleWidth  = (int) Math.round(scaleHeight * rendererAspectRatio);
 		}
 
-		scaleWidth  = player.convertToModX(scaleWidth, 4);
-		scaleHeight = player.convertToModX(scaleHeight, 4);
+		scaleWidth  = Player.convertToModX(scaleWidth, 4);
+		scaleHeight = Player.convertToModX(scaleHeight, 4);
+		return scaleWidth + "x" + scaleHeight;
 	}
 }
