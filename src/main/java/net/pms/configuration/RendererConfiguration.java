@@ -459,7 +459,7 @@ public class RendererConfiguration {
 	}
 
 	public boolean isPS3() {
-		return getConfName().toUpperCase().contains("PLAYSTATION") || getConfName().toUpperCase().contains("PS3");
+		return getConfName().toUpperCase().contains("PLAYSTATION 3") || getConfName().toUpperCase().contains("PS3");
 	}
 
 	public boolean isBRAVIA() {
