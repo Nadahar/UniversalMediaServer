@@ -67,8 +67,11 @@ public class RemoteMediaHandler implements HttpHandler {
 			LOGGER.debug("media unkonwn");
 			throw new IOException("Bad id");
 		}
-		long len = res.get(0).length();
-		Range range = RemoteUtil.parseRange(t.getRequestHeaders(), len);
+		if (!dlna.isCodeValid(dlna)) {
+			LOGGER.debug("coded object with invalid code");
+			throw new IOException("Bad code");
+		}
+		DLNAMediaSubtitle sid = null;
 		String mime = root.getDefaultRenderer().getMimeType(res.get(0).mimeType());
 		DLNAResource dlna = res.get(0);
 		DLNAMediaInfo m = dlna.getMedia();
@@ -88,11 +91,32 @@ public class RemoteMediaHandler implements HttpHandler {
 			}
 		}
 
-		LOGGER.debug("dumping media " + mime + " " + res);
+		if (!RemoteUtil.directmime(mime) && dlna.getFormat().isAudio()) {
+			dlna.setPlayer(new FFmpegAudio());
+			code = 206;
+		}
+
+		m.setMimeType(mime);
+		Range.Byte range = RemoteUtil.parseRange(t.getRequestHeaders(), dlna.length());
+		LOGGER.debug("dumping media " + mime + " " + dlna);
 		InputStream in = dlna.getInputStream(range, root.getDefaultRenderer());
+		if(range.getEnd() == 0) {
+			// For web resources actual length may be unknown until we open the stream
+			range.setEnd(dlna.length());
+		}
 		Headers hdr = t.getResponseHeaders();
 		hdr.add("Content-Type", mime);
 		hdr.add("Accept-Ranges", "bytes");
+		if (range != null) {
+			long end = range.getEnd();
+			long start = range.getStart();
+			String rStr = start + "-" + end + "/*" ;
+			hdr.add("Content-Range", "bytes " + rStr);
+			if (start != 0) {
+				code = 206;
+			}
+
+		}
 		hdr.add("Server", PMS.get().getServerName());
 		hdr.add("Connection", "keep-alive");
 		t.sendResponseHeaders(200, 0);
