@@ -18,8 +18,11 @@ ul#Media {
 	z-index: 2;
 }
 
-form#SearchForm {
-	position: absolute;
-	top: 27px;
-	right: 20px;
+#ContentPage #Menu #HomeButton {
+	height: 51px;
 }
+
+#ImageContainer {
+	position: static;
+}
+
