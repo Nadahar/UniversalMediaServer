@@ -6,6 +6,18 @@
 		Improved stability and speed with large amounts of images
 		Expanded code testing coverage (thanks, Jensaarai!)
 		Fixed videos being muxed instead of streamed
+		Made tsMuxeR use FFmpeg instead of MEncoder
+		Made tsMuxeR transcode audio to AAC if the renderer expects AAC
+		Improved FFmpeg responsiveness during fast-forward and rewind
+		Improved automatic rescaling
+		Fixed detection of aspect ratios
+		Merged the install/uninstall Windows Service buttons into one button (thanks, taconaut!)
+		Add zoom/fit to web image viewer
+		Fixed a bug with sending external subtitles
+		Fixed MIME type finalization when parsing media
+		Fixed transcoding to AAC via MEncoder
+		Support late resolution of media length
+		Expanded code testing for improved stability
 		Limits clickable areas of settings more precisely
 		Uses a default renderer image when none exist
 		Made H.264 transcoding faster
@@ -49,6 +61,7 @@
 		Fixed the web interface when browsing via Safari
 		Improved stability when disabling renderers
 	Renderers:
+		Added support for Sony PlayStation 4
 		Improved support for DTS audio on Panasonic VT60 TVs
 		Improves support for Samsung EH5300 TVs (thanks, panzer!)
 		Fixed initial folders bug on Xbox 360/One
@@ -88,6 +101,7 @@
 		Updated French translation (thanks, Kirvx!)
 		Updated Spanish translation (thanks, AlfredoRamos!)
 	External Components:
+		Rolled back FFmpeg on OS X to fix transcoding for some users
 		Updated Maven Assembly Plugin to 2.5.4
 		Updated Maven Compiler Plugin to 3.3
 		Updated Maven Git Commit ID Plugin to 2.1.15
