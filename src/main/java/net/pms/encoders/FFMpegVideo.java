@@ -368,11 +368,15 @@ public class FFMpegVideo extends Player {
 
 			// Output video codec
 			if (renderer.isTranscodeToH264() || renderer.isTranscodeToH265()) {
-				transcodeOptions.add("-c:v");
-				if (renderer.isTranscodeToH264()) {
-					transcodeOptions.add("libx264");
-				} else {
-					transcodeOptions.add("libx265");
+				if (!customFFmpegOptions.contains("-c:v")) {
+					transcodeOptions.add("-c:v");
+					if (renderer.isTranscodeToH264()) {
+						transcodeOptions.add("libx264");
+						transcodeOptions.add("-tune");
+						transcodeOptions.add("zerolatency");
+					} else {
+						transcodeOptions.add("libx265");
+					}
 				}
 				if (!customFFmpegOptions.contains("-preset")) {
 					transcodeOptions.add("-preset");
@@ -910,9 +914,6 @@ public class FFMpegVideo extends Player {
 			cmdList.add("-map");
 			cmdList.add("0:a:" + (media.getAudioTracksList().indexOf(params.aid)));
 		}
-
-		cmdList.add("-tune");
-		cmdList.add("zerolatency");
 
 		// Now configure the output streams
 
