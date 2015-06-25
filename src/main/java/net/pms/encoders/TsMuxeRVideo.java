@@ -153,6 +153,7 @@ public class TsMuxeRVideo extends Player {
 				"-f", "h264",
 				"-c:v", "libx264",
 				"-level", "31",
+				"-tune", "zerolatency",
 				"-pix_fmt", "yuv420p",
 				"-an",
 				"-y",
@@ -206,6 +207,7 @@ public class TsMuxeRVideo extends Player {
 					"-ar", rate,
 					"-f", "wav",
 					"-acodec", depth,
+					"-tune", "zerolatency",
 					"-y",
 					ffAudioPipe[0].getInputPipe()
 				};
@@ -227,6 +229,7 @@ public class TsMuxeRVideo extends Player {
 				"-i", filename,
 				"-c", "copy",
 				"-f", "rawvideo",
+				"-tune", "zerolatency",
 				"-y",
 				ffVideoPipe.getInputPipe()
 			};
@@ -326,6 +329,7 @@ public class TsMuxeRVideo extends Player {
 							"-ac", "" + sm.getNbChannels(),
 							"-f", "ac3",
 							"-c:a", sm.isDtsEmbed() || sm.isEncodedAudioPassthrough() ? "copy" : "pcm",
+							"-tune", "zerolatency",
 							"-y",
 							ffAudioPipe[0].getInputPipe()
 						};
@@ -344,6 +348,7 @@ public class TsMuxeRVideo extends Player {
 							"-f", "ac3",
 							"-c:a", (ac3Remux) ? "copy" : "ac3",
 							"-ab", String.valueOf(CodecUtil.getAC3Bitrate(configuration, params.aid)) + "k",
+							"-tune", "zerolatency",
 							"-y",
 							ffAudioPipe[0].getInputPipe()
 						};
@@ -416,6 +421,7 @@ public class TsMuxeRVideo extends Player {
 								"-f", "ac3",
 								singleMediaAudio ? "-y" : "-map", singleMediaAudio ? "-y" : ("0:a:" + (media.getAudioTracksList().indexOf(audio))),
 								"-c:a", sm.isDtsEmbed() || sm.isEncodedAudioPassthrough() ? "copy" : "pcm",
+								"-tune", "zerolatency",
 								"-y",
 								ffAudioPipe[i].getInputPipe()
 							};
@@ -430,6 +436,7 @@ public class TsMuxeRVideo extends Player {
 								singleMediaAudio ? "-y" : "-map", singleMediaAudio ? "-y" : ("0:a:" + (media.getAudioTracksList().indexOf(audio))),
 								"-c:a", (ac3Remux) ? "copy" : "ac3",
 								"-ab", String.valueOf(CodecUtil.getAC3Bitrate(configuration, audio)) + "k",
+								"-tune", "zerolatency",
 								"-y",
 								ffAudioPipe[i].getInputPipe()
 							};
