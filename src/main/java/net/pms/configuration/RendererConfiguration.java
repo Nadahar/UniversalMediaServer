@@ -94,72 +94,89 @@ public class RendererConfiguration {
 	private static final String MPEGTSMPEG2AC3 = "MPEGTS-MPEG2-AC3";
 
 	// property names
-	private static final String ACCURATE_DLNA_ORGPN = "AccurateDLNAOrgPN";
-	private static final String AUDIO = "Audio";
-	private static final String AUTO_EXIF_ROTATE = "AutoExifRotate";
-	private static final String BYTE_TO_TIMESEEK_REWIND_SECONDS = "ByteToTimeseekRewindSeconds"; // Ditlew
-	private static final String CBR_VIDEO_BITRATE = "CBRVideoBitrate"; // Ditlew
-	private static final String CHARMAP = "CharMap";
-	private static final String CHUNKED_TRANSFER = "ChunkedTransfer";
-	private static final String CUSTOM_FFMPEG_OPTIONS = "CustomFFmpegOptions";
-	private static final String CUSTOM_MENCODER_OPTIONS = "CustomMencoderOptions";
-	private static final String CUSTOM_MENCODER_MPEG2_OPTIONS = "CustomMencoderQualitySettings"; // TODO (breaking change): value should be CustomMEncoderMPEG2Options
-	private static final String DEFAULT_VBV_BUFSIZE = "DefaultVBVBufSize";
-	private static final String DISABLE_MENCODER_NOSKIP = "DisableMencoderNoskip";
-	private static final String DLNA_LOCALIZATION_REQUIRED = "DLNALocalizationRequired";
-	private static final String DLNA_ORGPN_USE = "DLNAOrgPN";
-	private static final String DLNA_PN_CHANGES = "DLNAProfileChanges";
-	private static final String DLNA_TREE_HACK = "CreateDLNATreeFaster";
-	private static final String LIMIT_FOLDERS = "LimitFolders";
-	private static final String FORCE_JPG_THUMBNAILS = "ForceJPGThumbnails"; // Sony devices require JPG thumbnails
-	private static final String H264_L41_LIMITED = "H264Level41Limited";
-	private static final String IMAGE = "Image";
-	private static final String IGNORE_TRANSCODE_BYTE_RANGE_REQUEST = "IgnoreTranscodeByteRangeRequests";
-	private static final String KEEP_ASPECT_RATIO = "KeepAspectRatio";
-	private static final String MAX_VIDEO_BITRATE = "MaxVideoBitrateMbps";
-	private static final String MAX_VIDEO_HEIGHT = "MaxVideoHeight";
-	private static final String MAX_VIDEO_WIDTH = "MaxVideoWidth";
-	private static final String MEDIAPARSERV2 = "MediaInfo";
-	private static final String MEDIAPARSERV2_THUMB = "MediaParserV2_ThumbnailGeneration";
-	private static final String MIME_TYPES_CHANGES = "MimeTypesChanges";
-	private static final String MUX_DTS_TO_MPEG = "MuxDTSToMpeg";
-	private static final String MUX_H264_WITH_MPEGTS = "MuxH264ToMpegTS";
-	private static final String MUX_LPCM_TO_MPEG = "MuxLPCMToMpeg";
-	private static final String MUX_NON_MOD4_RESOLUTION = "MuxNonMod4Resolution";
-	private static final String OUTPUT_3D_FORMAT = "Output3DFormat";
-	private static final String OVERRIDE_FFMPEG_VF = "OverrideFFmpegVideoFilter";
-	private static final String LOADING_PRIORITY = "LoadingPriority";
-	private static final String RENDERER_ICON = "RendererIcon";
-	private static final String RENDERER_NAME = "RendererName";
-	private static final String RESCALE_BY_RENDERER = "RescaleByRenderer";
-	private static final String SEEK_BY_TIME = "SeekByTime";
-	private static final String SEND_DATE_METADATA = "SendDateMetadata";
-	private static final String SEND_FOLDER_THUMBNAILS = "SendFolderThumbnails";
-	private static final String SHOW_AUDIO_METADATA = "ShowAudioMetadata";
-	private static final String SHOW_DVD_TITLE_DURATION = "ShowDVDTitleDuration"; // Ditlew
-	private static final String SHOW_SUB_METADATA = "ShowSubMetadata";
-	private static final String STREAM_EXT = "StreamExtensions";
-	private static final String SUBTITLE_HTTP_HEADER = "SubtitleHttpHeader";
-	private static final String SUPPORTED = "Supported";
-	private static final String SUPPORTED_EXTERNAL_SUBTITLES_FORMATS = "SupportedExternalSubtitlesFormats";
-	private static final String SUPPORTED_INTERNAL_SUBTITLES_FORMATS = "SupportedInternalSubtitlesFormats";
-	private static final String TEXTWRAP = "TextWrap";
-	private static final String THUMBNAIL_AS_RESOURCE = "ThumbnailAsResource";
-	private static final String TRANSCODE_AUDIO_441KHZ = "TranscodeAudioTo441kHz";
-	private static final String TRANSCODE_AUDIO = "TranscodeAudio";
-	private static final String TRANSCODE_EXT = "TranscodeExtensions";
-	private static final String TRANSCODE_FAST_START = "TranscodeFastStart";
-	private static final String TRANSCODE_VIDEO = "TranscodeVideo";
-	private static final String TRANSCODED_SIZE = "TranscodedVideoFileSize";
-	private static final String TRANSCODED_VIDEO_AUDIO_SAMPLE_RATE = "TranscodedVideoAudioSampleRate";
-	private static final String USER_AGENT_ADDITIONAL_HEADER = "UserAgentAdditionalHeader";
-	private static final String USER_AGENT_ADDITIONAL_SEARCH = "UserAgentAdditionalHeaderSearch";
-	private static final String USER_AGENT = "UserAgentSearch";
-	private static final String USE_CLOSED_CAPTION = "UseClosedCaption";
-	private static final String USE_SAME_EXTENSION = "UseSameExtension";
-	private static final String VIDEO = "Video";
-	private static final String WRAP_DTS_INTO_PCM = "WrapDTSIntoPCM";
-	private static final String WRAP_ENCODED_AUDIO_INTO_PCM = "WrapEncodedAudioIntoPCM";
+	protected static final String ACCURATE_DLNA_ORGPN = "AccurateDLNAOrgPN";
+	protected static final String AUDIO = "Audio";
+	protected static final String AUTO_EXIF_ROTATE = "AutoExifRotate";
+	protected static final String AUTO_PLAY_TMO = "AutoPlayTmo";
+	protected static final String BYTE_TO_TIMESEEK_REWIND_SECONDS = "ByteToTimeseekRewindSeconds"; // Ditlew
+	protected static final String CBR_VIDEO_BITRATE = "CBRVideoBitrate"; // Ditlew
+	protected static final String CHARMAP = "CharMap";
+	protected static final String CHUNKED_TRANSFER = "ChunkedTransfer";
+	protected static final String CUSTOM_FFMPEG_OPTIONS = "CustomFFmpegOptions";
+	protected static final String CUSTOM_MENCODER_OPTIONS = "CustomMencoderOptions";
+	protected static final String CUSTOM_MENCODER_MPEG2_OPTIONS = "CustomMencoderQualitySettings"; // TODO (breaking change): value should be CustomMEncoderMPEG2Options
+	protected static final String DEFAULT_VBV_BUFSIZE = "DefaultVBVBufSize";
+	protected static final String DEVICE_ID = "Device";
+	protected static final String DISABLE_MENCODER_NOSKIP = "DisableMencoderNoskip";
+	protected static final String DLNA_LOCALIZATION_REQUIRED = "DLNALocalizationRequired";
+	protected static final String DLNA_ORGPN_USE = "DLNAOrgPN";
+	protected static final String DLNA_PN_CHANGES = "DLNAProfileChanges";
+	protected static final String DLNA_TREE_HACK = "CreateDLNATreeFaster";
+	protected static final String EMBEDDED_SUBS_SUPPORTED = "InternalSubtitlesSupported";
+	protected static final String FORCE_JPG_THUMBNAILS = "ForceJPGThumbnails"; // Sony devices require JPG thumbnails
+	protected static final String H264_L41_LIMITED = "H264Level41Limited";
+	protected static final String IGNORE_TRANSCODE_BYTE_RANGE_REQUEST = "IgnoreTranscodeByteRangeRequests";
+	protected static final String IMAGE = "Image";
+	protected static final String KEEP_ASPECT_RATIO = "KeepAspectRatio";
+	protected static final String LIMIT_FOLDERS = "LimitFolders";
+	protected static final String LOADING_PRIORITY = "LoadingPriority";
+	protected static final String MAX_VIDEO_BITRATE = "MaxVideoBitrateMbps";
+	protected static final String MAX_VIDEO_HEIGHT = "MaxVideoHeight";
+	protected static final String MAX_VIDEO_WIDTH = "MaxVideoWidth";
+	protected static final String MAX_VOLUME = "MaxVolume";
+	protected static final String MEDIAPARSERV2 = "MediaInfo";
+	protected static final String MEDIAPARSERV2_THUMB = "MediaParserV2_ThumbnailGeneration";
+	protected static final String MIME_TYPES_CHANGES = "MimeTypesChanges";
+	protected static final String MUX_DTS_TO_MPEG = "MuxDTSToMpeg";
+	protected static final String MUX_H264_WITH_MPEGTS = "MuxH264ToMpegTS";
+	protected static final String MUX_LPCM_TO_MPEG = "MuxLPCMToMpeg";
+	protected static final String MUX_NON_MOD4_RESOLUTION = "MuxNonMod4Resolution";
+	protected static final String NOT_AGGRESSIVE_BROWSING = "NotAggressiveBrowsing";
+	protected static final String OUTPUT_3D_FORMAT = "Output3DFormat";
+	protected static final String OVERRIDE_FFMPEG_VF = "OverrideFFmpegVideoFilter";
+	protected static final String PREPEND_TRACK_NUMBERS = "PrependTrackNumbers";
+	protected static final String RENDERER_ICON = "RendererIcon";
+	protected static final String RENDERER_NAME = "RendererName";
+	protected static final String RESCALE_BY_RENDERER = "RescaleByRenderer";
+	protected static final String SEEK_BY_TIME = "SeekByTime";
+	protected static final String SEND_DATE_METADATA = "SendDateMetadata";
+	protected static final String SEND_FOLDER_THUMBNAILS = "SendFolderThumbnails";
+	protected static final String SHOW_AUDIO_METADATA = "ShowAudioMetadata";
+	protected static final String SHOW_DVD_TITLE_DURATION = "ShowDVDTitleDuration"; // Ditlew
+	protected static final String SHOW_SUB_METADATA = "ShowSubMetadata";
+	protected static final String STREAM_EXT = "StreamExtensions";
+	protected static final String SUBTITLE_HTTP_HEADER = "SubtitleHttpHeader";
+	protected static final String SUPPORTED = "Supported";
+	protected static final String SUPPORTED_EXTERNAL_SUBTITLES_FORMATS = "SupportedExternalSubtitlesFormats";
+	protected static final String SUPPORTED_INTERNAL_SUBTITLES_FORMATS = "SupportedInternalSubtitlesFormats";
+	protected static final String SUPPORTED_SUBTITLES_FORMATS = "SupportedSubtitlesFormats";
+	protected static final String TEXTWRAP = "TextWrap";
+	protected static final String THUMBNAIL_AS_RESOURCE = "ThumbnailAsResource";
+	protected static final String THUMBNAIL_HEIGHT = "ThumbnailHeight";
+	protected static final String THUMBNAIL_WIDTH = "ThumbnailWidth";
+	protected static final String TRANSCODE_AUDIO = "TranscodeAudio";
+	protected static final String TRANSCODE_AUDIO_441KHZ = "TranscodeAudioTo441kHz";
+	protected static final String TRANSCODE_EXT = "TranscodeExtensions";
+	protected static final String TRANSCODE_FAST_START = "TranscodeFastStart";
+	protected static final String TRANSCODE_VIDEO = "TranscodeVideo";
+	protected static final String TRANSCODED_SIZE = "TranscodedVideoFileSize";
+	protected static final String TRANSCODED_VIDEO_AUDIO_SAMPLE_RATE = "TranscodedVideoAudioSampleRate";
+	protected static final String UPNP_DETAILS = "UpnpDetailsSearch";
+	protected static final String UPNP_ALLOW = "UpnpAllow";
+	protected static final String USER_AGENT = "UserAgentSearch";
+	protected static final String USER_AGENT_ADDITIONAL_HEADER = "UserAgentAdditionalHeader";
+	protected static final String USER_AGENT_ADDITIONAL_SEARCH = "UserAgentAdditionalHeaderSearch";
+	protected static final String USE_CLOSED_CAPTION = "UseClosedCaption";
+	protected static final String USE_SAME_EXTENSION = "UseSameExtension";
+	protected static final String VIDEO = "Video";
+	protected static final String WRAP_DTS_INTO_PCM = "WrapDTSIntoPCM";
+	protected static final String WRAP_ENCODED_AUDIO_INTO_PCM = "WrapEncodedAudioIntoPCM";
+
+	// Deprecated property names
+	@Deprecated
+	protected static final String THUMBNAIL_BG = "ThumbnailBackground";
+	@Deprecated
+	protected static final String THUMBNAIL_SIZE = "ThumbnailSize";
 
 	private static int maximumBitrateTotal = 0;
 	public static final String UNKNOWN_ICON = "unknown.png";
@@ -429,6 +446,28 @@ public class RendererConfiguration {
 
 	public int getRank() {
 		return rank;
+	}
+
+	/**
+	 * @see #getThumbnailWidth()
+	 * @see #getThumbnailHeight()
+	 * @deprecated
+	 */
+	@Deprecated
+	public String getThumbSize() {
+		return getThumbnailWidth() + "x" + getThumbnailHeight();
+	}
+
+	public String getThumbBG() {
+		return getString(THUMBNAIL_BG, "");
+	}
+
+	public int getThumbnailWidth() {
+		return getInt(THUMBNAIL_WIDTH, 320);
+	}
+
+	public int getThumbnailHeight() {
+		return getInt(THUMBNAIL_HEIGHT, 180);
 	}
 
 	/**
