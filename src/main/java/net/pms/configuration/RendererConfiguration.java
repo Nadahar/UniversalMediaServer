@@ -455,9 +455,10 @@ public class RendererConfiguration {
 	 */
 	@Deprecated
 	public String getThumbSize() {
-		return getThumbnailWidth() + "x" + getThumbnailHeight();
+		return getString(THUMBNAIL_SIZE, "");
 	}
 
+	@Deprecated
 	public String getThumbBG() {
 		return getString(THUMBNAIL_BG, "");
 	}
@@ -468,6 +469,14 @@ public class RendererConfiguration {
 
 	public int getThumbnailHeight() {
 		return getInt(THUMBNAIL_HEIGHT, 180);
+	}
+
+	/**
+	 * @return the desired aspect ratio for thumbnails to two decimal places
+	 */
+	// TODO: Cache this
+	public double getThumbnailRatio() {
+		return Math.round(((double) getThumbnailWidth() / getThumbnailHeight()) * 100.0) / 100.0;
 	}
 
 	/**
