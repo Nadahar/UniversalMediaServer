@@ -2463,15 +2463,21 @@ public abstract class DLNAResource extends HTTPResource implements Cloneable, Ru
 		} else {
 			if (isFolder()) {
 				uclass = "object.container.storageFolder";
-				boolean xbox360 = mediaRenderer.isXbox360();
-				if (xbox360 && getFakeParentId() != null && getFakeParentId().equals("7")) {
-					uclass = "object.container.album.musicAlbum";
-				} else if (xbox360 && getFakeParentId() != null && getFakeParentId().equals("6")) {
-					uclass = "object.container.person.musicArtist";
-				} else if (xbox360 && getFakeParentId() != null && getFakeParentId().equals("5")) {
-					uclass = "object.container.genre.musicGenre";
-				} else if (xbox360 && getFakeParentId() != null && getFakeParentId().equals("F")) {
-					uclass = "object.container.playlistContainer";
+				if (xbox360 && getFakeParentId() != null) {
+					switch (getFakeParentId()) {
+						case "7":
+							uclass = "object.container.album.musicAlbum";
+							break;
+						case "6":
+							uclass = "object.container.person.musicArtist";
+							break;
+						case "5":
+							uclass = "object.container.genre.musicGenre";
+							break;
+						case "F":
+							uclass = "object.container.playlistContainer";
+							break;
+					}
 				}
 			} else if (getFormat() != null && getFormat().isVideo()) {
 				uclass = "object.item.videoItem";
