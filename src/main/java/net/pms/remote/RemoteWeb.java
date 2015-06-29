@@ -1,6 +1,7 @@
 package net.pms.remote;
 
 import com.sun.net.httpserver.*;
+
 import java.io.*;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -10,13 +11,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executors;
+
 import javax.net.ssl.*;
+
 import net.pms.PMS;
 import net.pms.configuration.PmsConfiguration;
 import net.pms.configuration.RendererConfiguration;
 import net.pms.configuration.WebRender;
 import net.pms.dlna.DLNAResource;
 import net.pms.dlna.RootFolder;
+
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -332,6 +336,7 @@ public class RemoteWeb {
 
 	static class RemoteStartHandler implements HttpHandler {
 		private static final Logger LOGGER = LoggerFactory.getLogger(RemoteStartHandler.class);
+		@SuppressWarnings("unused")
 		private final static String CRLF = "\r\n";
 
 		@Override
@@ -369,12 +374,29 @@ public class RemoteWeb {
 				sb.append("</body>");
 			sb.append("</html>");
 
-			String response = sb.toString();
-			Headers hdr = t.getResponseHeaders();
-			hdr.add("Content-Type", "text/html");
-			t.sendResponseHeaders(200, response.length());
-			try (OutputStream os = t.getResponseBody()) {
-				os.write(response.getBytes());
+			String response = parent.getResources().getTemplate("start.html").execute(vars);
+			RemoteUtil.respond(t, response, 200, "text/html");
+		}
+	}
+
+	static class RemoteDocHandler implements HttpHandler {
+		private static final Logger LOGGER = LoggerFactory.getLogger(RemoteDocHandler.class);
+		@SuppressWarnings("unused")
+		private final static String CRLF = "\r\n";
+
+		private RemoteWeb parent;
+
+		public RemoteDocHandler(RemoteWeb parent) {
+			this.parent = parent;
+			// Make sure logs are available right away
+			getLogs(false);
+		}
+
+		@Override
+		public void handle(HttpExchange t) throws IOException {
+			LOGGER.debug("root req " + t.getRequestURI());
+			if (RemoteUtil.deny(t)) {
+				throw new IOException("Access denied");
 			}
 		}
 	}
@@ -385,5 +407,32 @@ public class RemoteWeb {
 				PMS.get().getServer().getHost() + ":" + server.getAddress().getPort();
 		}
 		return null;
+	}
+
+	static class RemotePollHandler implements HttpHandler {
+		@SuppressWarnings("unused")
+		private static final Logger LOGGER = LoggerFactory.getLogger(RemotePollHandler.class);
+		@SuppressWarnings("unused")
+		private final static String CRLF = "\r\n";
+
+		private RemoteWeb parent;
+
+		public RemotePollHandler(RemoteWeb parent) {
+			this.parent = parent;
+		}
+
+		@Override
+		public void handle(HttpExchange t) throws IOException {
+			//LOGGER.debug("poll req " + t.getRequestURI());
+			if (RemoteUtil.deny(t)) {
+				throw new IOException("Access denied");
+			}
+			@SuppressWarnings("unused")
+			String p = t.getRequestURI().getPath();
+			RootFolder root = parent.getRoot(RemoteUtil.userName(t), t);
+			WebRender renderer = (WebRender) root.getDefaultRenderer();
+			String json = renderer.getPushData();
+			RemoteUtil.respond(t, json, 200, "text");
+		}
 	}
 }

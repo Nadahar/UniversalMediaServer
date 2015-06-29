@@ -20,15 +20,21 @@
 
 package net.pms.configuration;
 
+import com.google.gson.Gson;
+
+import java.io.File;
 import java.net.InetAddress;
+
 import net.pms.Messages;
 import net.pms.PMS;
+
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.lang.StringUtils;
 
 public class WebRender extends RendererConfiguration {
 	private String name;
 	private String ip;
+	@SuppressWarnings("unused")
 	private int port;
 	private String ua;
 	private static final PmsConfiguration configuration = PMS.getConfiguration();
@@ -316,6 +322,7 @@ public class WebRender extends RendererConfiguration {
 		cmdList.add("matroska");
 	}
 
+	@SuppressWarnings("unused")
 	private void ffhlsCmd(List<String> cmdList, DLNAMediaInfo media) {
 		// Can't streamcopy if filters are present
 		boolean canCopy = !(cmdList.contains("-vf") || cmdList.contains("-filter_complex"));
