@@ -21,13 +21,10 @@
 package net.pms.configuration;
 
 import com.google.gson.Gson;
-
 import java.io.File;
 import java.net.InetAddress;
-
 import net.pms.Messages;
 import net.pms.PMS;
-
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.lang.StringUtils;
 
