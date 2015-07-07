@@ -101,6 +101,8 @@ public class Request extends HTTPResource {
 
 	public void setMediaRenderer(RendererConfiguration mediaRenderer) {
 		this.mediaRenderer = mediaRenderer;
+		// Use device-specific pms conf
+		configuration = PMS.getConfiguration(mediaRenderer);
 	}
 
 	public InputStream getInputStream() {

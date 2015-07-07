@@ -701,6 +701,10 @@ public class FFMpegVideo extends Player {
 		InputFile newInput = new InputFile();
 		newInput.setFilename(filename);
 		newInput.setPush(params.stdin);
+		// Use device-specific pms conf
+		PmsConfiguration prev = configuration;
+		configuration = (DeviceConfiguration) params.mediaRenderer;
+		RendererConfiguration renderer = params.mediaRenderer;
 
 		/*
 		 * Check if the video track and the container report different aspect ratios

@@ -117,6 +117,9 @@ public class FFmpegWebVideo extends FFMpegVideo {
 		}
 		params.minBufferSize = params.minFileSize;
 		params.secondread_minsize = 100000;
+		// Use device-specific pms conf
+		PmsConfiguration prev = configuration;
+		configuration = (DeviceConfiguration) params.mediaRenderer;
 		RendererConfiguration renderer = params.mediaRenderer;
 		String filename = dlna.getSystemName();
 		setAudioAndSubs(filename, media, params);

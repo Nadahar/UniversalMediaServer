@@ -53,6 +53,9 @@ public class RAWThumbnailer extends Player {
 		DLNAMediaInfo media,
 		OutputParams params
 	) throws IOException {
+		PmsConfiguration prev = configuration;
+		// Use device-specific pms conf
+		configuration = (DeviceConfiguration)params.mediaRenderer;
 		params.waitbeforestart = 1;
 		params.minBufferSize = 1;
 		params.maxBufferSize = 6;
@@ -97,6 +100,8 @@ public class RAWThumbnailer extends Player {
 	// Called from net.pms.formats.RAW.parse XXX even if the engine is disabled
 	// May also be called from launchTranscode
 	public static byte[] getThumbnail(OutputParams params, String fileName) throws IOException {
+		// Use device-specific pms conf
+		PmsConfiguration configuration = PMS.getConfiguration(params);
 		params.log = false;
 
 		String cmdArray[] = new String[4];

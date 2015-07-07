@@ -109,6 +109,9 @@ public class VideoLanVideoStreaming extends Player {
 		DLNAResource dlna,
 		DLNAMediaInfo media,
 		OutputParams params) throws IOException {
+		// Use device-specific pms conf
+		PmsConfiguration prev = configuration;
+		configuration = (DeviceConfiguration) params.mediaRenderer;
 		boolean isWindows = Platform.isWindows();
 		final String filename = dlna.getSystemName();
 		PipeProcess tsPipe = new PipeProcess("VLC" + System.currentTimeMillis() + "." + getMux());
