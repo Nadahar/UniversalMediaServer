@@ -17,6 +17,14 @@
 		Fixed MIME type finalization when parsing media
 		Fixed transcoding to AAC via MEncoder
 		Support late resolution of media length
+		Improved the accuracy of video metadata
+		Added ThumbnailWidth and ThumbnailHeight renderer settings
+		Added support for file extensions: AC3, AMR and TTA (thanks, ler0y!)
+		Fixed custom device configuration loading
+		Added more logging
+		Fixed folders not showing if they were previously empty, with "hide empty folders" enabled (thanks, jensaarai!)
+		Cleaned up the titles in the transcode folder in some cases
+		Various minor improvements/fixes
 		Expanded code testing for improved stability
 		Limits clickable areas of settings more precisely
 		Uses a default renderer image when none exist
@@ -61,6 +69,8 @@
 		Fixed the web interface when browsing via Safari
 		Improved stability when disabling renderers
 	Renderers:
+		Improved thumbnail display on Panasonic TVs
+		Improved thumbnail display on Microsoft Xbox One
 		Added support for Sony PlayStation 4
 		Improved support for DTS audio on Panasonic VT60 TVs
 		Improves support for Samsung EH5300 TVs (thanks, panzer!)
@@ -93,6 +103,8 @@
 		Updated the image for Xbox 360
 		Fixed 24-bit FLAC playback on PS3 via the Videos folder
 	Languages:
+		Updated English translation (thanks, Nadahar!)
+		Updated Norwegian translation (thanks, Nadahar!)
 		Updated French translation (thanks, Kirvx!)
 		Updated Spanish translation (thanks, AlfredoRamos!)
 		Made more strings translatable
