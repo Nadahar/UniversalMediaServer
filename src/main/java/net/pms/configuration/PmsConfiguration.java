@@ -496,7 +496,7 @@ public class PmsConfiguration {
 
 			if (pmsConfFile.isFile()) {
 				if (FileUtil.isFileReadable(pmsConfFile)) {
-					configuration.load(PROFILE_PATH);
+					configuration.load(pmsConfFile);
 				} else {
 					LOGGER.warn("Can't load {}", PROFILE_PATH);
 				}
