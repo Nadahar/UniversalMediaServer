@@ -6,6 +6,9 @@
 		Improved stability and speed with large amounts of images
 		Expanded code testing coverage (thanks, Jensaarai!)
 		Fixed videos being muxed instead of streamed
+		Improved efficiency of configuration file loading (thanks, Nadahar!)
+		Improved support for quotation marks and apostrophes on some renderers (thanks, Nadahar!)
+		Fixed broken 32-bit MediaInfo dependency
 		Made tsMuxeR use FFmpeg instead of MEncoder
 		Made tsMuxeR transcode audio to AAC if the renderer expects AAC
 		Improved FFmpeg responsiveness during fast-forward and rewind
@@ -69,6 +72,7 @@
 		Fixed the web interface when browsing via Safari
 		Improved stability when disabling renderers
 	Renderers:
+		Fixed Xbox One thumbnails
 		Improved thumbnail display on Panasonic TVs
 		Improved thumbnail display on Microsoft Xbox One
 		Added support for Sony PlayStation 4
@@ -103,6 +107,7 @@
 		Updated the image for Xbox 360
 		Fixed 24-bit FLAC playback on PS3 via the Videos folder
 	Languages:
+		Updated Spanish translation (thanks, AlfredoRamos!)
 		Updated English translation (thanks, Nadahar!)
 		Updated Norwegian translation (thanks, Nadahar!)
 		Updated French translation (thanks, Kirvx!)
@@ -113,6 +118,7 @@
 		Updated French translation (thanks, Kirvx!)
 		Updated Spanish translation (thanks, AlfredoRamos!)
 	External Components:
+		Updated MediaInfo to 0.7.75
 		Rolled back FFmpeg on OS X to fix transcoding for some users
 		Updated Maven Assembly Plugin to 2.5.4
 		Updated Maven Compiler Plugin to 3.3
