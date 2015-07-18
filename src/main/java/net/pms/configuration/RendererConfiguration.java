@@ -185,6 +185,10 @@ public class RendererConfiguration {
 		return defaultConf;
 	}
 
+	public ConfigurationReader getConfigurationReader() {
+		return configurationReader;
+	}
+
 	/**
 	 * Load all renderer configuration files and set up the default renderer.
 	 *

@@ -29,12 +29,11 @@ import org.slf4j.LoggerFactory;
 /**
  * Helper class that implements common getters for the various types stored in renderer confs and PMS.conf.
  */
-// this class and all its methods are package private
-class ConfigurationReader {
+public class ConfigurationReader {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ConfigurationReader.class);
 	private Map<String, Object> logMap = new HashMap<>();
 	private final Configuration configuration;
-	private final boolean logOverrides;
+	private boolean logOverrides;
 
 	ConfigurationReader(Configuration configuration) {
 		this(configuration, false); // don't log by default: just provide the getters
@@ -250,5 +249,13 @@ class ConfigurationReader {
 
 		log(key, value, def);
 		return value;
+	}
+	
+	public boolean getLogOverrides() {
+		return logOverrides;
+	}
+	
+	public void setLogOverrides(boolean logOverrides) {
+		this.logOverrides = logOverrides;
 	}
 }
