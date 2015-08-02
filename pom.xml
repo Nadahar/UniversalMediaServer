@@ -1246,7 +1246,7 @@
                                                                 <configuration>
                                                                         <rules>
                                                                                 <requireJavaVersion>
-                                                                                        <version>[1.6.0]</version>
+                                                                                        <version>[1.6.0-65]</version>
                                                                                 </requireJavaVersion>
                                                                         </rules>
                                                                 </configuration>
@@ -1437,7 +1437,7 @@
                                                                 <configuration>
                                                                         <rules>
                                                                                 <requireJavaVersion>
-                                                                                        <version>[1.7]</version>
+                                                                                        <version>[1.7.0-80,1.7.0-100]</version>
                                                                                 </requireJavaVersion>
                                                                         </rules>
                                                                 </configuration>
@@ -1615,7 +1615,7 @@
                                                                 <configuration>
                                                                         <rules>
                                                                                 <requireJavaVersion>
-                                                                                        <version>[1.8]</version>
+                                                                                        <version>[1.8.0-51,1.8.0-100]</version>
                                                                                 </requireJavaVersion>
                                                                         </rules>
                                                                 </configuration>
