@@ -221,11 +221,11 @@ public class RendererConfiguration {
 						r.rank = rank++;
 						String rendererName = r.getConfName();
 						allRenderersNames.add(rendererName);
-						String renderersGroup = null; 
+						String renderersGroup = null;
 						if (rendererName.indexOf(" ") > 0) {
 							renderersGroup = rendererName.substring(0, rendererName.indexOf(" "));
 						}
-						
+
 						if (selectedRenderers.contains(rendererName) || selectedRenderers.contains(renderersGroup) || selectedRenderers.contains(pmsConf.ALL_RENDERERS)) {
 							enabledRendererConfs.add(r);
 						} else {
@@ -284,6 +284,35 @@ public class RendererConfiguration {
 		return configurationReader.getString(key, def);
 	}
 
+	public List<String> getStringList(String key, String def) {
+		List<String> result = configurationReader.getStringList(key, def);
+		if (result.size() == 1 && result.get(0).equalsIgnoreCase("None")) {
+			return new ArrayList<String>();
+		} else {
+			return result;
+		}
+	}
+
+	public void setStringList(String key, List<String> value) {
+		String result = "";
+		for (String element : value) {
+			if (!result.isEmpty()) {
+				result += ", ";
+			}
+			result += element;
+		}
+		if (result.isEmpty()) {
+			result = "None";
+		}
+		configuration.setProperty(key, result);
+	}
+
+	public Color getColor(String key, String defaultValue) {
+		String colorString = getString(key, defaultValue);
+		Color color = StringUtil.parseColor(colorString);
+		return color != null ? color : ! colorString.equals(defaultValue) ? StringUtil.parseColor(defaultValue) : null;
+	}
+
 	@Deprecated
 	public static ArrayList<RendererConfiguration> getAllRendererConfigurations() {
 		return getEnabledRenderersConfigurations();
@@ -325,6 +354,11 @@ public class RendererConfiguration {
 	public static void resetAllRenderers() {
 		for (RendererConfiguration rc : enabledRendererConfs) {
 			rc.rootFolder = null;
+		}
+		// Resetting enabledRendererConfs isn't strictly speaking necessary any more, since
+		// these are now for reference only and never actually populate their root folders.
+		for (RendererConfiguration r : enabledRendererConfs) {
+			r.rootFolder = null;
 		}
 	}
 
