@@ -1,6 +1,13 @@
 4.5.0 - 2015-09-?? - Changes since 4.4.0
 
 	General:
+		Fixed audio transcoding with embedded images (thanks, Nadahar!)
+		Improved MIME type handling
+		Improved logging
+		Expanded filename prettifying
+		Improved renderer selection interface (thanks, Nadahar!)
+		Improved file support (thanks, Nadahar!)
+		Speed improvements
 		Improved detection of languages
 		Improved filename prettifying
 		Improved stability and speed with large amounts of images
@@ -71,7 +78,8 @@
 		Fixed logging error
 		Fixed the web interface when browsing via Safari
 		Improved stability when disabling renderers
-	Renderers:
+	Renderers
+		Improved support for Xbox 360
 		Fixed Xbox One thumbnails
 		Improved thumbnail display on Panasonic TVs
 		Improved thumbnail display on Microsoft Xbox One
@@ -107,6 +115,10 @@
 		Updated the image for Xbox 360
 		Fixed 24-bit FLAC playback on PS3 via the Videos folder
 	Languages:
+		Updated all languages to remove unused translations (thanks, ler0y and Nadahar!)
+		Updated Dutch translation (thanks, ler0y!)
+		Updated English (thanks, ler0y!)
+		Updated Polish translation (thanks, Karol Szastok!)
 		Updated Spanish translation (thanks, AlfredoRamos!)
 		Updated English translation (thanks, Nadahar!)
 		Updated Norwegian translation (thanks, Nadahar!)
@@ -118,6 +130,7 @@
 		Updated French translation (thanks, Kirvx!)
 		Updated Spanish translation (thanks, AlfredoRamos!)
 	External Components:
+		Updated FFmpeg for Windows
 		Updated MediaInfo to 0.7.75
 		Rolled back FFmpeg on OS X to fix transcoding for some users
 		Updated Maven Assembly Plugin to 2.5.4
