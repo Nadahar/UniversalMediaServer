@@ -102,18 +102,6 @@ public class TracesTab {
 
 		String[] messageDisplay = msg.replaceFirst("]", "string that should never match").split("string that should never match");
 		getList().append(dateFormat.format(date) + " " + messageDisplay[1]);
-		final JScrollBar vbar = jListPane.getVerticalScrollBar();
-
-		// If scrollbar was already at the bottom we schedule a new
-		// scroll event to scroll to the bottom again
-		if (vbar.getMaximum() == vbar.getValue() + vbar.getVisibleAmount()) {
-			EventQueue.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					vbar.setValue(vbar.getMaximum());
-				}
-			});
-		}
 	}
 
 	public JComponent build() {
