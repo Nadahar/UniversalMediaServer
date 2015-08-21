@@ -56,7 +56,6 @@ public class RemotePlayHandler implements HttpHandler {
 	}
 
 	private String mkPage(String id, HttpExchange t) throws IOException {
-		boolean flowplayer = true;
 
 		LOGGER.debug("make play page " + id);
 		RootFolder root = parent.getRoot(RemoteUtil.userName(t), t);
@@ -101,6 +100,13 @@ public class RemotePlayHandler implements HttpHandler {
 				auto = ">";
 			}
 		}
+		String auto = "autoplay";
+		String query = t.getRequestURI().getQuery();
+		boolean isImage = r.getFormat().isImage();
+		boolean isVideo = r.getFormat().isVideo();
+		boolean forceFlash = StringUtils.isNotEmpty(RemoteUtil.getQueryVars(query, "flash"));
+		boolean forcehtml5 = StringUtils.isNotEmpty(RemoteUtil.getQueryVars(query, "html5"));
+		boolean flowplayer = isVideo && (forceFlash || (!forcehtml5 && configuration.getWebFlash()));
 		String id1 = URLEncoder.encode(id, "UTF-8");
 		String rawId = id;
 
@@ -119,7 +125,7 @@ public class RemotePlayHandler implements HttpHandler {
 			// special page to return
 			return "<html><head><script>window.refresh=true;history.back()</script></head></html>";
 		}
-		if (r.getFormat().isImage()) {
+		if (isImage) {
 			flowplayer = false;
 			coverImage = "<img src=\"/raw/" + rawId + "\" alt=\"\"><br>";
 		}
@@ -130,33 +136,56 @@ public class RemotePlayHandler implements HttpHandler {
 			coverImage = "<img src=\"" + thumb + "\" alt=\"\"><br><h2>" + name + "</h2><br>";
 			flowplayer = false;
 		}
-		if (r.getFormat().isVideo()) {
+		if (isVideo) {
 			mediaType = "video";
 			if (mime.equals(FormatConfiguration.MIMETYPE_AUTO)) {
 				if (r.getMedia() != null && r.getMedia().getMimeType() != null) {
 					mime = r.getMedia().getMimeType();
 				}
 			}
-			/*if(!RemoteUtil.directmime(mime)) {
-				mime = RemoteUtil.MIME_TRANS;
-				flowplayer = false;
-			} */
+			if (!flowplayer) {
+				if (!RemoteUtil.directmime(mime) || RemoteUtil.transMp4(mime, r.getMedia()) || r.isResume()) {
+					WebRender render = (WebRender) r.getDefaultRenderer();
+					mime = render != null ? render.getVideoMimeType() : RemoteUtil.transMime();
+				}
+			}
 		}
-
-		// Media player HTML
-		StringBuilder sb = new StringBuilder();
-		sb.append("<!DOCTYPE html>").append(CRLF);
-			sb.append("<head>").append(CRLF);
-				sb.append("<link rel=\"stylesheet\" href=\"/files/reset.css\" type=\"text/css\" media=\"screen\">").append(CRLF);
-				sb.append("<link rel=\"stylesheet\" href=\"/files/web.css\" type=\"text/css\" media=\"screen\">").append(CRLF);
-				sb.append("<link rel=\"stylesheet\" href=\"/files/web-narrow.css\" type=\"text/css\" media=\"screen and (max-width: 1080px)\">").append(CRLF);
-				sb.append("<link rel=\"stylesheet\" href=\"/files/web-wide.css\" type=\"text/css\" media=\"screen and (min-width: 1081px)\">").append(CRLF);
-				sb.append("<link rel=\"icon\" href=\"/files/favicon.ico\" type=\"image/x-icon\">").append(CRLF);
-				sb.append("<title>Universal Media Server</title>").append(CRLF);
-				if (flowplayer) {
-					sb.append("<script src=\"/files/jquery.min.js\"></script>").append(CRLF);
-					sb.append("<script src=\"/files/flowplayer.min.js\"></script>").append(CRLF);
-					sb.append("<link rel=\"stylesheet\" href=\"/files/functional.css\">").append(CRLF);
+		vars.put("isVideo", isVideo);
+		vars.put("name", name);
+		vars.put("id1", id1);
+		vars.put("autoContinue", configuration.getWebAutoCont(r.getFormat()));
+		if (configuration.isDynamicPls()) {
+			if (r.getParent() instanceof Playlist) {
+				vars.put("plsOp", "del");
+				vars.put("plsSign", "-");
+				vars.put("plsAttr", RemoteUtil.getMsgString("Web.4", t));
+			}
+			else {
+				vars.put("plsOp", "add");
+				vars.put("plsSign", "+");
+				vars.put("plsAttr", RemoteUtil.getMsgString("Web.5", t));
+			}
+		}
+		addNextByType(r, vars);
+		if (isImage) {
+			// do this like this to simplify the code
+			// skip all player crap since img tag works well
+			int delay = configuration.getWebImgSlideDelay() * 1000;
+			if (delay > 0 && configuration.getWebAutoCont(r.getFormat())) {
+				vars.put("delay", delay);
+			}
+		} else {
+			vars.put("mediaType", mediaType);
+			vars.put("auto", auto);
+			vars.put("mime", mime);
+			if (flowplayer) {
+				if (
+					RemoteUtil.directmime(mime) &&
+					!RemoteUtil.transMp4(mime, r.getMedia()) &&
+					!r.isResume() &&
+					!forceFlash
+				) {
+					vars.put("src", true);
 				}
 			sb.append("</head>").append(CRLF);
 			sb.append("<body id=\"ContentPage\">").append(CRLF);
