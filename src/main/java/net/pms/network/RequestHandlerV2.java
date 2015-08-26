@@ -312,7 +312,7 @@ public class RequestHandlerV2 extends SimpleChannelUpstreamHandler {
 		if (ch.isConnected()) {
 			sendError(ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR);
 		}
-		e.getChannel().close();
+		ch.close();
 	}
 
 	private void sendError(ChannelHandlerContext ctx, HttpResponseStatus status) {
