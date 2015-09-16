@@ -19,7 +19,6 @@
 package net.pms.configuration;
 
 import com.sun.jna.Platform;
-import java.awt.Color;
 import java.awt.Component;
 import java.io.BufferedReader;
 import java.io.File;
@@ -111,6 +110,7 @@ public class PmsConfiguration {
 	protected static final String KEY_DYNAMIC_PLS_HIDE = "dynamic_playlist_hide_folder";
 	protected static final String KEY_DYNAMIC_PLS_SAVE_PATH = "dynamic_playlist_save_path";
 	protected static final String KEY_ENCODED_AUDIO_PASSTHROUGH = "encoded_audio_passthrough";
+	private static final String KEY_AUDIO_EMBED_DTS_IN_PCM = "audio_embed_dts_in_pcm";
 	protected static final String KEY_ENGINES = "engines";
 	protected static final String KEY_FFMPEG_ALTERNATIVE_PATH = "alternativeffmpegpath"; // TODO: FFmpegDVRMSRemux will be removed and DVR-MS will be transcoded
 	protected static final String KEY_FFMPEG_AVISYNTH_CONVERT_FPS = "ffmpeg_avisynth_convertfps";
@@ -158,7 +158,6 @@ public class PmsConfiguration {
 	protected static final String KEY_MEDIA_LIB_SORT = "media_lib_sort";
 	protected static final String KEY_MENCODER_ASS = "mencoder_ass";
 	protected static final String KEY_MENCODER_AC3_FIXED = "mencoder_ac3_fixed";
-	protected static final String KEY_MENCODER_CODEC_SPECIFIC_SCRIPT = "mencoder_codec_specific_script";
 	protected static final String KEY_MENCODER_CUSTOM_OPTIONS = "mencoder_custom_options";
 	protected static final String KEY_MENCODER_FONT_CONFIG = "mencoder_fontconfig";
 	protected static final String KEY_MENCODER_FORCE_FPS = "mencoder_forcefps";
@@ -174,6 +173,7 @@ public class PmsConfiguration {
 	protected static final String KEY_MENCODER_NORMALIZE_VOLUME = "mencoder_normalize_volume";
 	protected static final String KEY_MENCODER_OVERSCAN_COMPENSATION_HEIGHT = "mencoder_overscan_compensation_height";
 	protected static final String KEY_MENCODER_OVERSCAN_COMPENSATION_WIDTH = "mencoder_overscan_compensation_width";
+	private static final String KEY_AUDIO_REMUX_AC3 = "audio_remux_ac3";
 	protected static final String KEY_MENCODER_REMUX_MPEG2 = "mencoder_remux_mpeg2";
 	protected static final String KEY_MENCODER_SCALER = "mencoder_scaler";
 	protected static final String KEY_MENCODER_SCALEX = "mencoder_scalex";
@@ -222,7 +222,6 @@ public class PmsConfiguration {
 	protected static final String KEY_SERVER_NAME = "server_name";
 	protected static final String KEY_SERVER_PORT = "port";
 	protected static final String KEY_SHARES = "shares";
-	protected static final String KEY_SHOW_APERTURE_LIBRARY = "show_aperture_library";
 	protected static final String KEY_SHOW_IPHOTO_LIBRARY = "show_iphoto_library";
 	protected static final String KEY_SHOW_ITUNES_LIBRARY = "show_itunes_library";
 	protected static final String KEY_SINGLE = "single_instance";
@@ -285,6 +284,7 @@ public class PmsConfiguration {
 	protected static final String KEY_WEB_TRANSCODE = "web_transcode";
 	protected static final String KEY_WEB_WIDTH = "web_width";
 	protected static final String KEY_X264_CONSTANT_RATE_FACTOR = "x264_constant_rate_factor";
+	private static final String KEY_AUDIO_USE_PCM = "audio_use_pcm";
 
 	// Deprecated settings
 	@Deprecated
@@ -405,7 +405,7 @@ public class PmsConfiguration {
 
 	// Absolute path to skel (default) profile file e.g. /etc/skel/.config/universalmediaserver/UMS.conf
 	// "project.skelprofile.dir" project property
-	private static final String SKEL_PROFILE_PATH; 
+	private static final String SKEL_PROFILE_PATH;
 
 	private static final String PROPERTY_PROFILE_PATH = "ums.profile.path";
 	private static final String SYSTEM_PROFILE_DIRECTORY;
@@ -470,6 +470,52 @@ public class PmsConfiguration {
 		} else {
 			SKEL_PROFILE_PATH = null;
 		}
+	}
+
+	public void setStringList(String key, List<String> value) {
+		String result = "";
+		for (String element : value) {
+			if (!result.isEmpty()) {
+				result += ", ";
+			}
+			result += element;
+		}
+		if (result.isEmpty()) {
+			result = "None";
+		}
+		configuration.setProperty(key, result);
+	}
+
+	/**
+	 * Converts the MEncoder's quality settings format to FFmpeg's.
+	 *
+	 * @return The FFmpeg format.
+	 */
+	public String convertMencoderSettingToFFmpegFormat(String mpegSettings) {
+		String mpegSettingsArray[] = mpegSettings.split(":");
+		String pairArray[];
+		StringBuilder returnString = new StringBuilder();
+		for (String pair : mpegSettingsArray) {
+			pairArray = pair.split("=");
+			switch (pairArray[0]) {
+				case "keyint":
+					returnString.append("-g ").append(pairArray[1]).append(" ");
+					break;
+				case "vqscale":
+					returnString.append("-q:v ").append(pairArray[1]).append(" ");
+					break;
+				case "vqmin":
+					returnString.append("-qmin ").append(pairArray[1]).append(" ");
+					break;
+				case "vqmax":
+					returnString.append("-qmax ").append(pairArray[1]).append(" ");
+					break;
+				default:
+					break;
+			}
+		}
+
+		return returnString.toString();
 	}
 
 	/**
@@ -3265,6 +3311,10 @@ public class PmsConfiguration {
 			path.mkdirs();
 		}
 		return path;
+	}
+
+	public boolean getWebChrome() {
+		return getBoolean(KEY_WEB_CHROME_TRICK, false);
 	}
 
 	public File getWebFile(String file) {

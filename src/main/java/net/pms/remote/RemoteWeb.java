@@ -34,7 +34,7 @@ public class RemoteWeb {
 	private HashMap<String, RootFolder> roots;
 	private static final PmsConfiguration configuration = PMS.getConfiguration();
 	private static final int defaultPort = configuration.getWebPort();
-	
+
 
 	public RemoteWeb() {
 		this(defaultPort);
@@ -150,6 +150,10 @@ public class RemoteWeb {
 		return null;
 	}
 
+	public String getAddress() {
+		return PMS.get().getServer().getHost() + ":" + server.getAddress().getPort();
+	}
+
 	public RootFolder getRoot(String name, HttpExchange t) {
 		return getRoot(name, false, t);
 	}
@@ -248,6 +252,10 @@ public class RemoteWeb {
 		in.close();
 	}
 
+	public HttpServer getServer() {
+		return server;
+	}
+
 	static class RemoteThumbHandler implements HttpHandler {
 		private RemoteWeb parent;
 
@@ -332,7 +340,6 @@ public class RemoteWeb {
 
 	static class RemoteStartHandler implements HttpHandler {
 		private static final Logger LOGGER = LoggerFactory.getLogger(RemoteStartHandler.class);
-		@SuppressWarnings("unused")
 		private final static String CRLF = "\r\n";
 
 		@Override
@@ -370,29 +377,12 @@ public class RemoteWeb {
 				sb.append("</body>");
 			sb.append("</html>");
 
-			String response = parent.getResources().getTemplate("start.html").execute(vars);
-			RemoteUtil.respond(t, response, 200, "text/html");
-		}
-	}
-
-	static class RemoteDocHandler implements HttpHandler {
-		private static final Logger LOGGER = LoggerFactory.getLogger(RemoteDocHandler.class);
-		@SuppressWarnings("unused")
-		private final static String CRLF = "\r\n";
-
-		private RemoteWeb parent;
-
-		public RemoteDocHandler(RemoteWeb parent) {
-			this.parent = parent;
-			// Make sure logs are available right away
-			getLogs(false);
-		}
-
-		@Override
-		public void handle(HttpExchange t) throws IOException {
-			LOGGER.debug("root req " + t.getRequestURI());
-			if (RemoteUtil.deny(t)) {
-				throw new IOException("Access denied");
+			String response = sb.toString();
+			Headers hdr = t.getResponseHeaders();
+			hdr.add("Content-Type", "text/html");
+			t.sendResponseHeaders(200, response.length());
+			try (OutputStream os = t.getResponseBody()) {
+				os.write(response.getBytes());
 			}
 		}
 	}
@@ -403,32 +393,5 @@ public class RemoteWeb {
 				PMS.get().getServer().getHost() + ":" + server.getAddress().getPort();
 		}
 		return null;
-	}
-
-	static class RemotePollHandler implements HttpHandler {
-		@SuppressWarnings("unused")
-		private static final Logger LOGGER = LoggerFactory.getLogger(RemotePollHandler.class);
-		@SuppressWarnings("unused")
-		private final static String CRLF = "\r\n";
-
-		private RemoteWeb parent;
-
-		public RemotePollHandler(RemoteWeb parent) {
-			this.parent = parent;
-		}
-
-		@Override
-		public void handle(HttpExchange t) throws IOException {
-			//LOGGER.debug("poll req " + t.getRequestURI());
-			if (RemoteUtil.deny(t)) {
-				throw new IOException("Access denied");
-			}
-			@SuppressWarnings("unused")
-			String p = t.getRequestURI().getPath();
-			RootFolder root = parent.getRoot(RemoteUtil.userName(t), t);
-			WebRender renderer = (WebRender) root.getDefaultRenderer();
-			String json = renderer.getPushData();
-			RemoteUtil.respond(t, json, 200, "text");
-		}
 	}
 }

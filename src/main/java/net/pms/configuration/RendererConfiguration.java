@@ -1,6 +1,7 @@
 package net.pms.configuration;
 
 import com.sun.jna.Platform;
+import java.awt.Color;
 import java.io.File;
 import java.io.Reader;
 import java.net.InetAddress;
@@ -8,7 +9,6 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,13 +29,11 @@ import net.pms.formats.Format;
 import net.pms.network.HTTPResource;
 import net.pms.network.SpeedStats;
 import net.pms.util.PropertiesUtil;
+import net.pms.util.StringUtil;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.commons.io.Charsets;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.WordUtils;
 import org.apache.commons.lang3.StringUtils;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 import org.apache.commons.lang3.text.translate.UnicodeUnescaper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -219,7 +217,7 @@ public class RendererConfiguration {
 					try {
 						RendererConfiguration r = new RendererConfiguration(f);
 						r.rank = rank++;
-						String rendererName = r.getConfName();
+						String rendererName = r.getRendererName();
 						allRenderersNames.add(rendererName);
 						String renderersGroup = null;
 						if (rendererName.indexOf(" ") > 0) {
@@ -324,7 +322,7 @@ public class RendererConfiguration {
 	 * @return The list of all configurations.
 	 */
 	public static ArrayList<RendererConfiguration> getEnabledRenderersConfigurations() {
-		return enabledRendererConfs != null ? new ArrayList(enabledRendererConfs) : null;
+		return enabledRendererConfs != null ? new ArrayList<RendererConfiguration>(enabledRendererConfs) : null;
 	}
 
 	public static Collection<RendererConfiguration> getConnectedRenderersConfigurations() {
@@ -364,7 +362,7 @@ public class RendererConfiguration {
 
 	public RootFolder getRootFolder() {
 		if (rootFolder == null) {
-			ArrayList<String> tags = new ArrayList();
+			ArrayList<String> tags = new ArrayList<String>();
 			tags.add(getRendererName());
 			for (InetAddress sa : addressAssociation.keySet()) {
 				if (addressAssociation.get(sa) == this) {
@@ -466,7 +464,7 @@ public class RendererConfiguration {
 	 */
 	public static RendererConfiguration getRendererConfigurationByName(String name) {
 		for (RendererConfiguration conf : enabledRendererConfs) {
-			if (conf.getConfName().toLowerCase().contains(name.toLowerCase())) {
+			if (conf.getRendererName().toLowerCase().contains(name.toLowerCase())) {
 				return conf;
 			}
 		}
@@ -530,38 +528,38 @@ public class RendererConfiguration {
 	 * @return whether this renderer is an Xbox 360
 	 */
 	public boolean isXbox360() {
-		return getConfName().toUpperCase().contains("XBOX 360");
+		return getRendererName().toUpperCase().contains("XBOX 360");
 	}
 
 	/**
 	 * @return whether this renderer is an Xbox One
 	 */
 	public boolean isXboxOne() {
-		return getConfName().toUpperCase().contains("XBOX ONE");
+		return getRendererName().toUpperCase().contains("XBOX ONE");
 	}
 
 	public boolean isXBMC() {
-		return getConfName().toUpperCase().contains("KODI") || getConfName().toUpperCase().contains("XBMC");
+		return getRendererName().toUpperCase().contains("KODI") || getRendererName().toUpperCase().contains("XBMC");
 	}
 
 	public boolean isPS3() {
-		return getConfName().toUpperCase().contains("PLAYSTATION 3") || getConfName().toUpperCase().contains("PS3");
+		return getRendererName().toUpperCase().contains("PLAYSTATION 3") || getRendererName().toUpperCase().contains("PS3");
 	}
 
 	public boolean isPS4() {
-		return getConfName().toUpperCase().contains("PLAYSTATION 4");
+		return getRendererName().toUpperCase().contains("PLAYSTATION 4");
 	}
 
 	public boolean isBRAVIA() {
-		return getConfName().toUpperCase().contains("BRAVIA");
+		return getRendererName().toUpperCase().contains("BRAVIA");
 	}
 
 	public boolean isFDSSDP() {
-		return getConfName().toUpperCase().contains("FDSSDP");
+		return getRendererName().toUpperCase().contains("FDSSDP");
 	}
 
 	public boolean isLG() {
-		return getConfName().toUpperCase().contains("LG ");
+		return getRendererName().toUpperCase().contains("LG ");
 	}
 
 	// Ditlew
@@ -1488,7 +1486,7 @@ public class RendererConfiguration {
 	 * This addresses a bug in some renderers (like Panasonic TVs) where
 	 * they stretch videos that are not 16/9.
 	 *
-	 * @return 
+	 * @return
 	 */
 	public boolean isKeepAspectRatio() {
 		return getBoolean(KEEP_ASPECT_RATIO, false);
@@ -1503,7 +1501,7 @@ public class RendererConfiguration {
 	 * poor-quality upscaling, since we will use more CPU and network
 	 * bandwidth when it is false.
 	 *
-	 * @return 
+	 * @return
 	 */
 	public boolean isRescaleByRenderer() {
 		return getBoolean(RESCALE_BY_RENDERER, true);
@@ -1680,7 +1678,7 @@ public class RendererConfiguration {
 
 	public String getOutput3DFormat() {
 		return getString(OUTPUT_3D_FORMAT, "");
-	}	
+	}
 
 	public boolean ignoreTranscodeByteRangeRequests() {
 		return getBoolean(IGNORE_TRANSCODE_BYTE_RANGE_REQUEST, false);
@@ -1804,7 +1802,7 @@ public class RendererConfiguration {
 			}
 			int p1 = r1.getLoadingPriority();
 			int p2 = r2.getLoadingPriority();
-			return p1 > p2 ? -1 : p1 < p2 ? 1 : r1.getConfName().compareToIgnoreCase(r2.getConfName());
+			return p1 > p2 ? -1 : p1 < p2 ? 1 : r1.getRendererName().compareToIgnoreCase(r2.getRendererName());
 		}
 	};
 

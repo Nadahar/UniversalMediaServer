@@ -153,9 +153,6 @@
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
-			<id>mygrid-repository</id>
-			<name>myGrid Repository</name>
-			<url>http://build.mygrid.org.uk/maven/repository</url>
 		</repository>
 
 		<!-- for jai-imageio-core-standalone, which is used by Thumbnailator 

@@ -46,6 +46,7 @@ import net.pms.formats.v2.SubtitleType;
 import net.pms.io.*;
 import net.pms.network.HTTPResource;
 import net.pms.newgui.CustomJButton;
+import net.pms.newgui.GuiUtil;
 import net.pms.util.*;
 import static net.pms.util.StringUtil.quoteArg;
 import org.apache.commons.configuration.event.ConfigurationEvent;
@@ -1043,9 +1044,9 @@ public class MEncoderVideo extends Player {
 				!dvd ||
 				configuration.isMencoderRemuxMPEG2()
 			) &&
-			params.aid != null && 
-			params.aid.isNonPCMEncodedAudio() && 
-			!avisynth() && 
+			params.aid != null &&
+			params.aid.isNonPCMEncodedAudio() &&
+			!avisynth() &&
 			params.mediaRenderer.isMuxLPCMToMpeg();
 
 		if (
@@ -1671,7 +1672,7 @@ public class MEncoderVideo extends Player {
 					} else {
 						cmdList.add(externalSubtitlesFileName.replace(",", "\\,")); // Commas in MEncoder separate multiple subtitle files
 					}
-					
+
 					if (params.sid.isExternalFileUtf()) {
 						// Append -utf8 option for UTF-8 external subtitles
 						cmdList.add("-utf8");
@@ -1767,7 +1768,7 @@ public class MEncoderVideo extends Player {
 
 			/*
 			 * Implement overscan compensation settings
-			 * 
+			 *
 			 * This feature takes into account aspect ratio,
 			 * making it less blunt than the Video Scaler option
 			 */

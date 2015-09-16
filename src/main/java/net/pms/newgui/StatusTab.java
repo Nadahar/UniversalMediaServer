@@ -26,17 +26,20 @@ import java.awt.Color;
 import java.awt.ComponentOrientation;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.Locale;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import net.pms.Messages;
 import net.pms.configuration.PmsConfiguration;
+import net.pms.configuration.RendererConfiguration;
 import net.pms.util.FormLayoutUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -194,7 +197,7 @@ public class StatusTab {
 		return new ImagePanel(bi);
 	}
 
-	public void addRendererIcon(int code, String msg, String icon) {
+	public Image addRendererIcon(int code, String msg, String icon) {
 		BufferedImage bi = null;
 
 		if (icon != null) {

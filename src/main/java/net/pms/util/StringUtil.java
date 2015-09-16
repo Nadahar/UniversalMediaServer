@@ -20,6 +20,7 @@
 
 package net.pms.util;
 
+import java.awt.Color;
 import java.util.Formatter;
 import java.util.Locale;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -98,7 +99,7 @@ public class StringUtil {
 		 * s = s.replace("\"", "&quot;");
 		 * s = s.replace("'", "&apos;");
 		 */
-		
+
 		// The second encoding/escaping of & is not a bug, it's what effectively adds the second layer of encoding/escaping
 		s = s.replace("&", "&amp;");
 		return s;
@@ -207,7 +208,7 @@ public class StringUtil {
 	 * otherwise returns the string as is.
 	 *
 	 * @param arg The argument string
-	 * @return The string, optionally in quotes. 
+	 * @return The string, optionally in quotes.
 	 */
 	public static String quoteArg(String arg) {
 		if (arg != null && arg.indexOf(' ') > -1) {
