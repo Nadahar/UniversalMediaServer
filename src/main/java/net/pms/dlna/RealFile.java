@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import net.pms.PMS;
 import net.pms.formats.Format;
 import net.pms.formats.FormatFactory;
-import net.pms.formats.M4A;
 import net.pms.util.FileUtil;
 import net.pms.util.ProcessUtil;
 import org.apache.commons.lang3.StringUtils;
