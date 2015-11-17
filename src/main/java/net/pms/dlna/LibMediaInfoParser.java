@@ -469,7 +469,7 @@ public class LibMediaInfoParser {
 			// only for audio files:
 			format = FormatConfiguration.MP2;
 			media.setContainer(FormatConfiguration.MP2);
-		} else if (value.equals ("ma") || value.equals("ma / core")) {
+		} else if (value.equals ("ma") || value.equals("ma / core" || value.equals("134")) {
 			if (audio.getCodecA() != null && audio.getCodecA().equals(FormatConfiguration.DTS)) {
 				format = FormatConfiguration.DTSHD;
 			}

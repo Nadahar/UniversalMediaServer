@@ -27,6 +27,7 @@ import java.awt.*;
 import java.io.*;
 import java.net.BindException;
 import java.nio.charset.StandardCharsets;
+import java.security.AccessControlException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
@@ -34,6 +35,8 @@ import java.util.Map.Entry;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.LogManager;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.jmdns.JmDNS;
 import javax.swing.*;
 import net.pms.configuration.Build;
@@ -74,8 +77,10 @@ public class PMS {
 	private static final String SCROLLBARS = "scrollbars";
 	private static final String NATIVELOOK = "nativelook";
 	private static final String CONSOLE = "console";
+	private static final String HEADLESS = "headless";
 	private static final String NOCONSOLE = "noconsole";
 	private static final String PROFILES = "profiles";
+	private static final String PROFILE = "^(?i)profile(?::|=)([^\"*<>?]+)$";
 	private static final String TRACE = "trace";
 
 	/**
@@ -274,34 +279,6 @@ public class PMS {
 		return null;
 	}
 
-	/**
-	 * Helper method for displayBanner: return a file or directory's
-	 * permissions in the Unix ls style e.g.: "rw" (read-write),
-	 * "r-" (read-only) &c.
-	 */
-	private String getPathPermissions(String path) {
-		String permissions;
-		File file = new File(path);
-
-		if (file.exists()) {
-			if (file.isFile()) {
-				permissions = String.format("%s%s",
-					FileUtil.isFileReadable(file) ? "r" : "-",
-					FileUtil.isFileWritable(file) ? "w" : "-"
-				);
-			} else {
-				permissions = String.format("%s%s",
-					FileUtil.isDirectoryReadable(file) ? "r" : "-",
-					FileUtil.isDirectoryWritable(file) ? "w" : "-"
-				);
-			}
-		} else {
-			permissions = "file not found";
-		}
-
-		return permissions;
-	}
-
 	private void displayBanner() throws IOException {
 		LOGGER.debug("");
 		LOGGER.info("Starting " + PropertiesUtil.getProjectProperties().get("project.name") + " " + getVersion());
@@ -330,7 +307,7 @@ public class PMS {
 		 */
 		File javaTmpdir = new File(System.getProperty("java.io.tmpdir"));
 
-		if (!FileUtil.isDirectoryWritable(javaTmpdir)) {
+		if (!FileUtil.getFilePermissions(javaTmpdir).isWritable()) {
 			LOGGER.error("The Java temp directory \"" + javaTmpdir.getAbsolutePath() + "\" is not writable by UMS");
 			LOGGER.error("Please make sure the directory is writable for user \"" + System.getProperty("user.name") + "\"");
 			throw new IOException("Cannot write to Java temp directory");
@@ -364,16 +341,31 @@ public class PMS {
 		String profileDirectoryPath = configuration.getProfileDirectory();
 
 		LOGGER.info("");
-		LOGGER.info("Profile directory: " + profileDirectoryPath);
-		LOGGER.info("Profile directory permissions: " + getPathPermissions(profileDirectoryPath));
-		LOGGER.info("Profile path: " + profilePath);
-		LOGGER.info("Profile permissions: " + getPathPermissions(profilePath));
-		LOGGER.info("Profile name: " + configuration.getProfileName());
+		LOGGER.info("Profile directory: {}", profileDirectoryPath);
+		try {
+			// Don't use the {} syntax here as the check needs to be performed on every log level
+			LOGGER.info("Profile directory permissions: " + FileUtil.getFilePermissions(profileDirectoryPath));
+		} catch (FileNotFoundException e) {
+			LOGGER.warn("Profile directory not found: {}", e.getMessage());
+		}
+		LOGGER.info("Profile configuration file: {}", profilePath);
+		try {
+			// Don't use the {} syntax here as the check needs to be performed on every log level
+			LOGGER.info("Profile configuration file permissions: " + FileUtil.getFilePermissions(profilePath));
+		} catch (FileNotFoundException e) {
+			LOGGER.warn("Profile configuration file not found: {}", e.getMessage());
+		}
+		LOGGER.info("Profile name: {}", configuration.getProfileName());
 		LOGGER.info("");
 		if (configuration.useWebInterface()) {
 			String webConfPath = configuration.getWebConfPath();
-			LOGGER.info("Web conf path: " + webConfPath);
-			LOGGER.info("Web conf permissions: " + getPathPermissions(webConfPath));
+			LOGGER.info("Web configuration file: {}", webConfPath);
+			try {
+				// Don't use the {} syntax here as the check needs to be performed on every log level
+				LOGGER.info("Web configuration file permissions: " + FileUtil.getFilePermissions(webConfPath));
+			} catch (FileNotFoundException e) {
+				LOGGER.warn("Web configuration file not found: {}", e.getMessage());
+			}
 			LOGGER.info("");
 		}
 
@@ -857,7 +849,6 @@ public class PMS {
 
 	public File[] getSharedFoldersArray(boolean monitored, ArrayList<String> tags, PmsConfiguration configuration) {
 		String folders;
-
 		if (monitored) {
 			folders = configuration.getFoldersMonitored();
 		} else {
@@ -1054,6 +1045,9 @@ public class PMS {
 		assert instance == null; // this should only be called once
 		instance = new PMS();
 
+		// Temporary set system locale until configuration is loaded for tests
+		PMS.setLocale(Locale.getDefault());
+
 		try {
 			if (instance.init()) {
 				LOGGER.info("The server is now available for renderers to find");
@@ -1079,11 +1073,14 @@ public class PMS {
 
 	public static void main(String args[]) {
 		boolean displayProfileChooser = false;
+		File profilePath = null;
 		CacheLogger.startCaching();
 
 		if (args.length > 0) {
+			Pattern pattern = Pattern.compile(PROFILE);
 			for (String arg : args) {
 				switch (arg) {
+					case HEADLESS:
 					case CONSOLE:
 						System.setProperty(CONSOLE, Boolean.toString(true));
 						break;
@@ -1103,10 +1100,17 @@ public class PMS {
 						traceMode = 2;
 						break;
 					default:
+						Matcher matcher = pattern.matcher(arg);
+						if (matcher.find()) {
+							profilePath = new File(matcher.group(1));
+						}
 						break;
 				}
 			}
 		}
+
+		// Temporary set system locale until configuration is loaded
+		PMS.setLocale(Locale.getDefault());
 
 		try {
 			Toolkit.getDefaultToolkit();
@@ -1124,7 +1128,16 @@ public class PMS {
 			}
 		}
 
-		if (!isHeadless() && displayProfileChooser) {
+		if (profilePath != null) {
+			if (!FileUtil.isValidFileName(profilePath.getName())) {
+				LOGGER.warn("Invalid file name in profile argument - using default profile");
+			} else if (!profilePath.exists()) {
+				LOGGER.warn("Specified profile ({}) doesn't exist - using default profile", profilePath.getAbsolutePath());
+			} else {
+				LOGGER.debug("Using specified profile: {}", profilePath.getAbsolutePath());
+				System.setProperty("ums.profile.path", profilePath.getAbsolutePath());
+			}
+		} else if (!isHeadless() && displayProfileChooser) {
 			ProfileChooser.display();
 		}
 
@@ -1177,7 +1190,7 @@ public class PMS {
 			try {
 				getConfiguration().initCred();
 			} catch (IOException e) {
-				LOGGER.debug("Error initializing plugin credentials: " + e);
+				LOGGER.debug("Error initializing plugin credentials: {}", e);
 			}
 
 			if (getConfiguration().isRunSingleInstance()) {
@@ -1375,27 +1388,40 @@ public class PMS {
 	 * Restart handling
 	 */
 	private static void killOld() {
-		if (!Platform.isWindows() || configuration.isAdmin()) {
-			try {
-				killProc();
-			} catch (IOException e) {
-				LOGGER.debug("Error killing old process " + e);
-			}
+		// Note: failure here doesn't necessarily mean we need admin rights,
+		// only that we lack the required permission for these specific items.
+		try {
+			killProc();
+		} catch (AccessControlException e) {
+			LOGGER.error(
+				"Failed to check for already running instance: " + e.getMessage() +
+				(Platform.isWindows() ? "\nUMS might need to run as an administrator to access the PID file" : "")
+			);
+		} catch (FileNotFoundException e) {
+			LOGGER.debug("PID file not found, cannot check for running process");
+		} catch ( IOException e) {
+			LOGGER.error("Error killing old process: " + e);
+		}
 
-			try {
-				dumpPid();
-			} catch (IOException e) {
-				LOGGER.debug("Error dumping PID " + e);
-			}
-		} else {
-			LOGGER.info("UMS must be run as administrator in order to access the PID file");
+		try {
+			dumpPid();
+		} catch (FileNotFoundException e) {
+			LOGGER.error(
+				"Failed to write PID file: "+ e.getMessage() +
+				(Platform.isWindows() ? "\nUMS might need to run as an administrator to enforce single instance" : "")
+			);
+		} catch (IOException e) {
+			LOGGER.error("Error dumping PID " + e);
 		}
 	}
 
 	/*
 	 * This method is only called for Windows OS'es, so specialized Windows charset handling is allowed
 	 */
-	private static boolean verifyPidName(String pid) throws IOException {
+	private static boolean verifyPidName(String pid) throws IOException, IllegalAccessException {
+		if (!Platform.isWindows()) {
+			throw new IllegalAccessException("verifyPidName can only be called from Windows!");
+		}
 		ProcessBuilder pb = new ProcessBuilder("tasklist", "/FI", "\"PID eq " + pid + "\"", "/V", "/NH", "/FO", "CSV");
 		pb.redirectErrorStream(true);
 		Process p = pb.start();
@@ -1433,10 +1459,15 @@ public class PMS {
 		return configuration.getDataFile("pms.pid");
 	}
 
-	private static void killProc() throws IOException {
+	private static void killProc() throws AccessControlException, IOException{
 		ProcessBuilder pb = null;
 		String pid;
-		try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(pidFile()), StandardCharsets.US_ASCII))) {
+		String pidFile = pidFile();
+		if (!FileUtil.getFilePermissions(pidFile).isReadable()) {
+			throw new AccessControlException("Cannot read " + pidFile);
+		}
+
+		try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(pidFile), StandardCharsets.US_ASCII))) {
 			pid = in.readLine();
 		}
 
@@ -1445,10 +1476,14 @@ public class PMS {
 		}
 
 		if (Platform.isWindows()) {
-			if (verifyPidName(pid)) {
-				pb = new ProcessBuilder("taskkill", "/F", "/PID", pid, "/T");
+			try {
+				if (verifyPidName(pid)) {
+					pb = new ProcessBuilder("taskkill", "/F", "/PID", pid, "/T");
+				}
+			} catch (IllegalAccessException e) {
+				// Impossible
 			}
-		} else if (Platform.isFreeBSD() || Platform.isLinux() || Platform.isOpenBSD() || Platform.isSolaris()) {
+ 		} else if (Platform.isFreeBSD() || Platform.isLinux() || Platform.isOpenBSD() || Platform.isSolaris()) {
 			pb = new ProcessBuilder("kill", "-9", pid);
 		}
 
@@ -1459,8 +1494,8 @@ public class PMS {
 		try {
 			Process p = pb.start();
 			p.waitFor();
-		} catch (IOException | InterruptedException e) {
-			LOGGER.trace("Error killing process by PID " + e);
+		} catch (InterruptedException e) {
+			LOGGER.trace("Got interrupted while trying to kill process by PID " + e);
 		}
 	}
 
@@ -1472,7 +1507,7 @@ public class PMS {
 	private static void dumpPid() throws IOException {
 		try (FileOutputStream out = new FileOutputStream(pidFile())) {
 			long pid = getPID();
-			LOGGER.debug("PID: " + pid);
+			LOGGER.debug("Writing PID: " + pid);
 			String data = String.valueOf(pid) + "\r\n";
 			out.write(data.getBytes(StandardCharsets.US_ASCII));
 			out.flush();
@@ -1500,23 +1535,35 @@ public class PMS {
 		PlayerFactory.registerPlayer(player);
 	}
 
+	private static ReadWriteLock headlessLock = new ReentrantReadWriteLock();
 	private static Boolean headless = null;
 
 	/**
 	 * Check if UMS is running in headless (console) mode, since some Linux
 	 * distros seem to not use java.awt.GraphicsEnvironment.isHeadless() properly
 	 */
-	public static synchronized boolean isHeadless() {
-		if (headless == null) {
-			try {
-				JDialog d = new JDialog();
-				d.dispose();
-				headless = Boolean.valueOf(false);
-			} catch (NoClassDefFoundError | HeadlessException | InternalError e) {
-				headless = Boolean.valueOf(true);
+	public static boolean isHeadless() {
+		headlessLock.readLock().lock();
+		try {
+			if (headless != null) {
+				return headless;
 			}
+		} finally {
+			headlessLock.readLock().unlock();
 		}
-		return headless.booleanValue();
+
+		headlessLock.writeLock().lock();
+		try {
+			JDialog d = new JDialog();
+			d.dispose();
+			headless = Boolean.FALSE;
+			return headless;
+		} catch (NoClassDefFoundError | HeadlessException | InternalError e) {
+			headless = Boolean.TRUE;
+			return headless;
+		} finally {
+			headlessLock.writeLock().unlock();
+		}
 	}
 
 	private static Locale locale = null;
@@ -1535,6 +1582,7 @@ public class PMS {
 		localeLock.writeLock().lock();
 		try {
 			locale = (Locale) aLocale.clone();
+			Messages.setLocaleBundle(locale);
 		} finally {
 			localeLock.writeLock().unlock();
 		}
