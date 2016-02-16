@@ -20,12 +20,12 @@ package net.pms.external;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -33,6 +33,11 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -124,7 +129,6 @@ public class ExternalFactory {
 		try {
 		Enumeration<URL> resources;
 
-		try {
 			// Each plugin .jar file has to contain a resource named "plugin"
 			// which should contain the name of the main plugin class.
 			resources = classLoader.getResources("plugin");
@@ -135,16 +139,18 @@ public class ExternalFactory {
 
 				// Determine the plugin main class name from the contents of
 				// the plugin file.
-				try (InputStreamReader in = new InputStreamReader(url.openStream())) {
+				try (InputStreamReader in = new InputStreamReader(url.openStream(), StandardCharsets.US_ASCII)) {
 					name = new char[512];
-					in.read(name);
+					if (in.read(name) == 0) {
+						LOGGER.warn("Could not read plugin main class name for: \"{}\"", new String(name).trim());
+					}
 				}
 
 				return new String(name).trim();
 			}
 		} catch (IOException e) {
-			LOGGER.error("Can't load plugin resources", e);
-		}
+			LOGGER.error("Can't load plugin resources: {}", e.getMessage());
+			LOGGER.trace("", e);
 		} finally {
 			try {
 				classLoader.close();
@@ -219,13 +225,15 @@ public class ExternalFactory {
 				// Determine the plugin main class name from the contents of
 				// the plugin file.
 				char[] name;
-				try (InputStreamReader in = new InputStreamReader(url.openStream())) {
+				try (InputStreamReader in = new InputStreamReader(url.openStream(), StandardCharsets.US_ASCII)) {
 					name = new char[512];
-					in.read(name);
+					if (in.read(name) == 0) {
+						LOGGER.warn("Could not read plugin main class name for: \"{}\"", new String(name).trim());
+					}
 				}
 				String pluginMainClassName = new String(name).trim();
 
-				LOGGER.info("Found plugin: " + pluginMainClassName);
+				LOGGER.info("Found plugin: {}", pluginMainClassName);
 
 				if (download) {
 					// Only purge code when downloading!
@@ -317,12 +325,13 @@ public class ExternalFactory {
 
 	private static void addToPurgeFile(File f) {
 		try {
-			try (FileWriter out = new FileWriter("purge", true)) {
+			try (OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream("purge", true), StandardCharsets.UTF_8)) {
 				out.write(f.getAbsolutePath() + "\r\n");
 				out.flush();
 			}
-		} catch (Exception e) {
-			LOGGER.debug("purge file error " + e);
+		} catch (IOException e) {
+			LOGGER.debug("purge file error: {} " + e.getMessage());
+			LOGGER.trace("", e);
 		}
 	}
 
@@ -331,27 +340,35 @@ public class ExternalFactory {
 		String action = configuration.getPluginPurgeAction();
 
 		if (action.equalsIgnoreCase("none")) {
-			purge.delete();
+			if (!purge.delete()) {
+				LOGGER.warn("Could not delete purge file \"{}\"", purge.getAbsolutePath());
+			}
 			return;
 		}
 
-		try {
-			try (FileInputStream fis = new FileInputStream(purge); BufferedReader in = new BufferedReader(new InputStreamReader(fis))) {
-				String line;
+		try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(purge), StandardCharsets.UTF_8))) {
+			String line;
 
-				while ((line = in.readLine()) != null) {
-					File f = new File(line);
+			while ((line = in.readLine()) != null) {
+				File f = new File(line);
 
-					if (action.equalsIgnoreCase("delete")) {
-						f.delete();
-					} else if(action.equalsIgnoreCase("backup")) {
-						FileUtils.moveFileToDirectory(f, new File("backup"), true);
-						f.delete();
+				if (action.equalsIgnoreCase("delete")) {
+					if (!f.delete()) {
+						LOGGER.warn("Could not delete plugin file \"{}\"", f.getAbsolutePath());
 					}
+				} else if(action.equalsIgnoreCase("backup")) {
+					FileUtils.moveFileToDirectory(f, new File("backup"), true);
 				}
 			}
-		} catch (IOException e) { }
-		purge.delete();
+		} catch (IOException e) {
+			if (!(e instanceof FileNotFoundException)) {
+				LOGGER.error("IO error during purgeFiles: {}", e.getMessage());
+				LOGGER.trace("", e);
+			}
+		}
+		if (!purge.delete()) {
+			LOGGER.warn("Could not delete purge file \"{}\"", purge.getAbsolutePath());
+		}
 	}
 
 	/**
@@ -364,51 +381,58 @@ public class ExternalFactory {
 	public static void lookup() {
 		// Start by purging files
 		purgeFiles();
-		File pluginsFolder = new File(configuration.getPluginDirectory());
-		LOGGER.info("Searching for plugins in " + pluginsFolder.getAbsolutePath());
+		Path pluginsFolder = Paths.get(configuration.getPluginDirectory()).toAbsolutePath();
+		//File pluginsFolder = new File(configuration.getPluginDirectory());
+		LOGGER.info("Searching for plugins in \"{}\"", pluginsFolder);
 
 		try {
 			FilePermissions permissions = new FilePermissions(pluginsFolder);
 			if (!permissions.isFolder()) {
-				LOGGER.warn("Plugins folder is not a folder: " + pluginsFolder.getAbsolutePath());
+				LOGGER.warn("Plugins folder is not a folder: \"{}\"", pluginsFolder);
 				return;
 			}
 			if (!permissions.isBrowsable()) {
-				LOGGER.warn("Plugins folder is not readable: " + pluginsFolder.getAbsolutePath());
+				LOGGER.warn("Plugins folder is not readable: \"{}\"", pluginsFolder);
 				return;
 			}
 		} catch (FileNotFoundException e) {
-			LOGGER.warn("Can't find plugins folder: {}", e.getMessage());
+			LOGGER.warn("Can't find plugins folder \"{}\": {}", pluginsFolder, e.getMessage());
 			return;
 		}
 
 		// Find all .jar files in the plugin directory
-		File[] jarFiles = pluginsFolder.listFiles(
-			new FileFilter() {
-				@Override
-				public boolean accept(File file) {
-					return file.isFile() && file.getName().toLowerCase().endsWith(".jar");
-				}
+		DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<Path>() {
+
+			@Override
+			public boolean accept(Path entry) throws IOException {
+				Path fileName = entry.getFileName();
+				return fileName != null && Files.isRegularFile(entry) && fileName.toString().toLowerCase().endsWith(".jar");
 			}
-		);
-
-		int nJars = (jarFiles == null) ? 0 : jarFiles.length;
-
-		if (nJars == 0) {
-			LOGGER.info("No plugins found");
-			return;
-		}
+		};
 
 		// To load a .jar file the filename needs to converted to a file URL
 		List<URL> jarURLList = new ArrayList<>();
 
-		for (int i = 0; i < nJars; ++i) {
-			try {
-				jarURLList.add(jarFiles[i].toURI().toURL());
-			} catch (MalformedURLException e) {
-				LOGGER.error("Can't convert file path " + jarFiles[i] + " to URL", e);
+		try (DirectoryStream<Path> jarFiles = Files.newDirectoryStream(pluginsFolder, filter)) {
+
+			for (Path jarFile : jarFiles) {
+				try {
+					jarURLList.add(jarFile.toUri().toURL());
+				} catch (MalformedURLException me) {
+					LOGGER.error("Can't convert file \"{}\" to URL: {}", jarFile, me.getMessage());
+					LOGGER.trace("", me);
+				}
 			}
+		} catch (IOException e) {
+			LOGGER.error("Can't read plugin folder \"{}\": {}", pluginsFolder, e.getMessage());
+			LOGGER.trace("", e);
 		}
+
+		if (jarURLList.isEmpty()) {
+			LOGGER.info("No plugins found");
+			return;
+		}
+
 
 		URL[] jarURLs = new URL[jarURLList.size()];
 		jarURLList.toArray(jarURLs);
