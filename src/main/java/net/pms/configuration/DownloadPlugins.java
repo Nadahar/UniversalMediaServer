@@ -31,6 +31,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Scanner;
@@ -40,6 +44,7 @@ import javax.swing.JLabel;
 import net.pms.Messages;
 import net.pms.PMS;
 import net.pms.external.ExternalFactory;
+import net.pms.util.FileUtil;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -370,7 +375,7 @@ public class DownloadPlugins {
 		return true;
 	}
 
-	private void doExec(String args) throws IOException, InterruptedException, ConfigurationException {
+	private void doExec(String args) throws IOException, ConfigurationException {
 		int pos = args.indexOf(',');
 		if (pos == -1) { // weird stuff
 			return;
@@ -378,7 +383,7 @@ public class DownloadPlugins {
 
 		// Everything after the "," is what we're supposed to run
 		// First make note of jars we got
-		File[] oldJar = new File(configuration.getPluginDirectory()).listFiles();
+		Path[] oldJar = FileUtil.listPaths(Paths.get(configuration.getPluginDirectory()));
 
 		// Before we start external installers better save the config
 		configuration.save();
@@ -391,29 +396,32 @@ public class DownloadPlugins {
 		LOGGER.debug("running '" + args + "'");
 		Process pid = pb.start();
 		// Consume and log any output
-		Scanner output = new Scanner(pid.getInputStream());
-		while (output.hasNextLine()) {
-			LOGGER.debug("[" + args + "] " + output.nextLine());
+		try (Scanner output = new Scanner(pid.getInputStream())) {
+			while (output.hasNextLine()) {
+				LOGGER.debug("[" + args + "] " + output.nextLine());
+			}
 		}
 		configuration.reload();
-		pid.waitFor();
+		try {
+			pid.waitFor();
+		} catch (InterruptedException e) {
+			return;
+		}
 
-		File[] newJar = new File(configuration.getPluginDirectory()).listFiles();
-		for (File f : newJar) {
-			if (!f.getAbsolutePath().endsWith(".jar")) {
-				// skip non jar files
-				continue;
-			}
-			for (File oldJar1 : oldJar) {
-				if (f.getAbsolutePath().equals(oldJar1.getAbsolutePath())) {
-					// old jar file break out, and set f to null to skip adding it
-					f = null;
-					break;
+		DirectoryStream.Filter<Path> filter = FileUtil.createDirectoryStreamExtensionFilter("jar", false);
+		try (DirectoryStream<Path> jarFiles = Files.newDirectoryStream(Paths.get(configuration.getPluginDirectory()), filter)) {
+			for (Path jarFile : jarFiles) {
+				boolean old = false;
+				for (Path oldJarFile : oldJar) {
+					if (Files.isSameFile(jarFile, oldJarFile)) {
+						old = true;
+						break;
+					}
 				}
-			}
-			// if f is null this is an jar that is old
-			if (f != null) {
-				jars.add(f.toURI().toURL());
+				// Don't add old/existing jars
+				if (!old) {
+					jars.add(jarFile.toUri().toURL());
+				}
 			}
 		}
 	}
@@ -455,7 +463,9 @@ public class DownloadPlugins {
 		if (cmd.equalsIgnoreCase("exec")) {
 			try {
 				doExec(args);
-			} catch (ConfigurationException | IOException | InterruptedException e) {
+			} catch (ConfigurationException | IOException e) {
+				LOGGER.error("Error while executing \"{}\": {}", args, e.getMessage());
+				LOGGER.trace("", e);
 			}
 
 			return true;
