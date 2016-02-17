@@ -1,11 +1,16 @@
 package net.pms.dlna;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.pms.PMS;
+import net.pms.util.FileUtil;
 
 public class FileSearch implements SearchObj {
+	private static final Logger LOGGER = LoggerFactory.getLogger(FileSearch.class);
 	private ArrayList<RealFile> folders;
 
 	public FileSearch(List<RealFile> folders) {
@@ -28,8 +33,13 @@ public class FileSearch implements SearchObj {
 			}
 			if (res.getFile().isDirectory()) {
 				// tricky case, recursive in to folders
-				File f = res.getFile();
-				searchFiles(f.listFiles(), searchString, searcher, 0);
+				File file = res.getFile();
+				try {
+					searchFiles(FileUtil.listFiles(file), searchString, searcher, 0);
+				} catch (IOException e) {
+					LOGGER.error("IO error while enumerating \"{}\" content: {}", file.getAbsolutePath(), e.getMessage());
+					LOGGER.trace("", e);
+				}
 			}
 		}
 	}
@@ -38,18 +48,23 @@ public class FileSearch implements SearchObj {
 		if (files == null) {
 			return;
 		}
-		for (File f : files) {
-			String name = f.getName().toLowerCase();
+		for (File file : files) {
+			String name = file.getName().toLowerCase();
 			if (name.contains(str)) {
-				searcher.addChild(new RealFile(f));
+				searcher.addChild(new RealFile(file));
 				continue;
 			}
-			if (f.isDirectory()) {
+			if (file.isDirectory()) {
 				if (cnt >= PMS.getConfiguration().getSearchDepth()) {
 					// this is here to avoid endless looping
 					return;
 				}
-				searchFiles(f.listFiles(), str, searcher, cnt + 1);
+				try {
+					searchFiles(FileUtil.listFiles(file), str, searcher, cnt + 1);
+				} catch (IOException e) {
+					LOGGER.error("IO error while enumerating \"{}\" content: {}", file.getAbsolutePath(), e.getMessage());
+					LOGGER.trace("", e);
+				}
 			}
 		}
 	}
