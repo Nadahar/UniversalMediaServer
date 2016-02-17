@@ -21,6 +21,9 @@ package net.pms.dlna;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import net.pms.configuration.MapFileConfiguration;
 import net.pms.network.HTTPResource;
@@ -105,7 +108,7 @@ public class MapFile extends DLNAResource {
 						}
 						if (!emptyFoldersToRescan.contains(f)) {
 							emptyFoldersToRescan.add(f);
-						}									
+						}
 					} else { // Otherwise add the file
 						RealFile rf = new RealFile(f);
 						if (searchList != null) {
@@ -124,25 +127,26 @@ public class MapFile extends DLNAResource {
 	}
 
 	private List<File> getFileList() {
-		List<File> out = new ArrayList<>();
+		List<File> result = new ArrayList<>();
 
 		for (File file : this.conf.getFiles()) {
-			if (file != null && file.isDirectory()) {
-				if (file.canRead()) {
-					File[] files = file.listFiles();
-
-					if (files == null) {
-						LOGGER.warn("Can't read files from directory: {}", file.getAbsolutePath());
-					} else {
-						out.addAll(Arrays.asList(files));
+			if (file == null) {
+				continue;
+			}
+			Path entry = file.toPath();
+			if (Files.isDirectory(entry)) {
+				try (DirectoryStream<Path> subEntries = Files.newDirectoryStream(entry)) {
+					for (Path subEntry : subEntries) {
+						result.add(subEntry.toFile());
 					}
-				} else {
-					LOGGER.warn("Can't read directory: {}", file.getAbsolutePath());
+				} catch (IOException e) {
+					LOGGER.error("Error reading folder \"{}\" contents: {}", entry.toAbsolutePath(), e.getMessage());
+					LOGGER.trace("", e);
 				}
 			}
 		}
 
-		return out;
+		return result;
 	}
 
 	@Override
@@ -218,7 +222,7 @@ public class MapFile extends DLNAResource {
 					}
 					if (!emptyFoldersToRescan.contains(f)) {
 						emptyFoldersToRescan.add(f);
-					}				
+					}
 					continue;
 				}
 
@@ -280,16 +284,16 @@ public class MapFile extends DLNAResource {
 				modified = Math.max(modified, f.lastModified());
 			}
 		}
-		
+
 		// Check if any of our previously empty folders now have content
 		boolean emptyFolderNowNotEmpty = false;
-		if (emptyFoldersToRescan != null) {			
+		if (emptyFoldersToRescan != null) {
 			for (File emptyFile : emptyFoldersToRescan) {
 				if (FileUtil.isFolderRelevant(emptyFile, configuration)) {
 					emptyFolderNowNotEmpty = true;
 					break;
 				}
-			}			
+			}
 		}
 		return (getLastRefreshTime() < modified) || (configuration.getSortMethod(getPath()) == UMSUtils.SORT_RANDOM || emptyFolderNowNotEmpty);
 	}
