@@ -230,13 +230,29 @@ public class FileUtil {
 	}
 
 	public static String getExtension(String f) {
-		int point = f.lastIndexOf('.');
+		int idx = f.lastIndexOf('.');
 
-		if (point == -1) {
+		if (idx == -1 || idx == f.length() - 1) {
 			return null;
 		}
 
-		return f.substring(point + 1);
+		return f.substring(idx + 1);
+	}
+
+	public static String getExtension(Path path) {
+		Path fileNamePath = path.getFileName();
+		if (fileNamePath == null) {
+			return null;
+		}
+
+		String fileName = fileNamePath.toString();
+		int idx = fileName.lastIndexOf(".");
+
+		if (idx == -1 || idx == fileName.length() - 1) {
+			return null;
+		}
+
+		return fileName.substring(idx + 1);
 	}
 
 	public static String getFileNameWithoutExtension(String f) {

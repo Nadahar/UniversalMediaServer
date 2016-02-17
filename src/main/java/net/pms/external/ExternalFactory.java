@@ -49,6 +49,7 @@ import net.pms.configuration.RendererConfiguration;
 import net.pms.external.URLResolver.URLResult;
 import net.pms.newgui.LooksFrame;
 import net.pms.util.FilePermissions;
+import net.pms.util.FileUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -405,8 +406,7 @@ public class ExternalFactory {
 
 			@Override
 			public boolean accept(Path entry) throws IOException {
-				Path fileName = entry.getFileName();
-				return fileName != null && Files.isRegularFile(entry) && fileName.toString().toLowerCase().endsWith(".jar");
+				return Files.isRegularFile(entry) && "jar".equalsIgnoreCase(FileUtil.getExtension(entry));
 			}
 		};
 
