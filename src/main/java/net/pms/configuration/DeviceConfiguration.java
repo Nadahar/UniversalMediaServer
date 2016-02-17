@@ -189,16 +189,10 @@ public class DeviceConfiguration extends PmsConfiguration {
 		xref = new HashMap<>();
 		if (Files.exists(deviceDir)) {
 			LOGGER.info("Loading device configurations from \"{}\"", deviceDir.toAbsolutePath());
-			DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<Path>() {
+			DirectoryStream.Filter<Path> filter = FileUtil.createDirectoryStreamExtensionFilter("conf", false);
 
-				@Override
-				public boolean accept(Path entry) throws IOException {
-					return "conf".equalsIgnoreCase(FileUtil.getExtension(entry));
-				}
-			};
-
-			try (DirectoryStream<Path> filess = Files.newDirectoryStream(deviceDir, filter)) {
-				for (Path configurationFile : filess) {
+			try (DirectoryStream<Path> files = Files.newDirectoryStream(deviceDir, filter)) {
+				for (Path configurationFile : files) {
 					loadDeviceFile(configurationFile.toFile(), createPropertiesConfiguration());
 					FileWatcher.add(new FileWatcher.Watch(configurationFile.toAbsolutePath().toString(), reloader));
 				}

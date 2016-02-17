@@ -1705,4 +1705,38 @@ public class FileUtil {
 	public static File[] listFiles(File folder) throws IOException {
 		return listFiles(folder.toPath());
 	}
+
+	/**
+	 * Creates a simple extension {@link DirectoryStream.Filter} for
+	 * {@link Path}s. The extension should not include the dot
+	 * (<code>.</code>).
+	 *
+	 * @param extension the {@link String} representing the extension.
+	 * @param caseSensitive whether or not the extension should be compared
+	 *                      case sensitively.
+	 * @return The generated {@link DirectoryStream.Filter}.
+	 */
+	public static DirectoryStream.Filter<Path> createDirectoryStreamExtensionFilter(final String extension, final boolean caseSensitive) {
+		if (extension == null) {
+			throw new IllegalArgumentException("extension cannot be null");
+		}
+
+		if (caseSensitive) {
+			return new DirectoryStream.Filter<Path>() {
+
+				@Override
+				public boolean accept(Path entry) throws IOException {
+					return extension.equals(getExtension(entry));
+				}
+			};
+		} else {
+			return new DirectoryStream.Filter<Path>() {
+
+				@Override
+				public boolean accept(Path entry) throws IOException {
+					return extension.equalsIgnoreCase(getExtension(entry));
+				}
+			};
+		}
+	}
 }
