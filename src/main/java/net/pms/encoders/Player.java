@@ -408,7 +408,7 @@ public abstract class Player {
 		if (!configuration.isDisableSubtitles() && params.sid == null && media != null) {
 			// Check for subtitles again
 			File video = new File(fileName);
-			FileUtil.isSubtitlesExists(video, media, false);
+			FileUtil.isSubtitlesExists(video, media, true);
 
 			if (configuration.isAutoloadExternalSubtitles()) {
 				boolean forcedSubsFound = false;
