@@ -1617,4 +1617,92 @@ public class FileUtil {
 			throw new UnsupportedOperationException("getUnixUID can only be called on Unix based OS'es");
 		}
 	}
+
+	/**
+	 * Returns an array of files and folders in the given folder in a similar
+	 * manner to {@link File#listFiles()} using {@link java.nio}. This method
+	 * supports Unicode file names. Never returns <code>null</code>.
+	 *
+	 * @param folder the {@link Path} for which to enumerate files and folders
+	 * @return The array of {@link Path}
+	 * @throws IOException
+	 */
+	public static Path[] listPaths(Path folder) throws IOException {
+		if (!Files.isDirectory(folder)) {
+			throw new IllegalArgumentException("Folder \"" + folder.toAbsolutePath().toString() + "\" isn't a folder");
+		}
+
+		List<Path> paths = new ArrayList<>();
+		try (DirectoryStream<Path> files = Files.newDirectoryStream(folder)) {
+			for (Path entry : files) {
+				paths.add(entry);
+			}
+		}
+
+		return paths.toArray(new Path[0]);
+	}
+
+	/**
+	 * Returns an array of files and folders in the given folder in a similar
+	 * manner to {@link File#listFiles()} using {@link java.nio}. This method
+	 * supports Unicode file names. Never returns <code>null</code>.
+	 *
+	 * @param folder the {@link File} for which to enumerate files and folders
+	 * @return The array of {@link Path}
+	 * @throws IOException
+	 */
+	public static Path[] listPaths(File folder) throws IOException {
+		return listPaths(folder.toPath());
+	}
+
+	/**
+	 * Returns an array of files and folders in the given folder in a similar
+	 * manner to {@link File#listFiles()} using {@link java.nio}. This method
+	 * supports Unicode file names. Never returns <code>null</code>.<br>
+	 * <br>
+	 * <strong>{@link File#listFiles()} doesn't support Unicode on all
+	 * platforms and should be avoided.</strong>
+	 *
+	 * @param folder the {@link Path} for which to enumerate files and folders
+	 * @return The array of {@link File}
+	 * @throws IOException
+	 * @deprecated {@link java.nio} fixes many bugs existing in
+	 *             {@link java.io}. Use {@link #listPaths(Path)} or
+	 *             {@link DirectoryStream} instead where
+	 *             possible.
+	 */
+	public static File[] listFiles(Path folder) throws IOException {
+		if (!Files.isDirectory(folder)) {
+			throw new IllegalArgumentException("Folder \"" + folder.toAbsolutePath().toString() + "\" isn't a folder");
+		}
+
+		List<File> filesList = new ArrayList<>();
+		try (DirectoryStream<Path> files = Files.newDirectoryStream(folder)) {
+			for (Path entry : files) {
+				filesList.add(entry.toFile());
+			}
+		}
+
+		return filesList.toArray(new File[0]);
+	}
+
+	/**
+	 * Returns an array of files and folders in the given folder in a similar
+	 * manner to {@link File#listFiles()} using {@link java.nio}. This method
+	 * supports Unicode file names. Never returns <code>null</code>.<br>
+	 * <br>
+	 * <strong>{@link File#listFiles()} doesn't support Unicode on all
+	 * platforms and should be avoided.</strong>
+	 *
+	 * @param folder the {@link File} for which to enumerate files and folders
+	 * @return The array of {@link File}
+	 * @throws IOException
+	 * @deprecated {@link java.nio} fixes many bugs existing in
+	 *             {@link java.io}. Use {@link #listPaths(Path)} or
+	 *             {@link DirectoryStream} instead where
+	 *             possible.
+	 */
+	public static File[] listFiles(File folder) throws IOException {
+		return listFiles(folder.toPath());
+	}
 }
