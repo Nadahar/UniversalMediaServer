@@ -3,6 +3,10 @@ package net.pms.configuration;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -10,6 +14,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import net.pms.PMS;
 import net.pms.network.UPNPHelper;
+import net.pms.util.FileUtil;
 import net.pms.util.FileWatcher;
 import org.apache.commons.configuration.CompositeConfiguration;
 import org.apache.commons.configuration.ConfigurationException;
@@ -30,7 +35,7 @@ public class DeviceConfiguration extends PmsConfiguration {
 	private RendererConfiguration ref = null;
 	private static HashMap<String, PropertiesConfiguration> deviceConfs;
 	private static HashMap<String, String> xref;
-	private static File deviceDir;
+	private static final Path deviceDir = Paths.get(PMS.getConfiguration().getProfileDirectory(), "renderers");
 
 	public DeviceConfiguration() {
 		super(0);
@@ -172,22 +177,34 @@ public class DeviceConfiguration extends PmsConfiguration {
 	}
 
 	public static File getDeviceDir() {
+		return deviceDir.toFile();
+	}
+
+	public static Path getDeviceDirPath() {
 		return deviceDir;
 	}
 
-	public static void loadDeviceConfigurations(PmsConfiguration pmsConf) {
+	public static void loadDeviceConfigurations() {
 		deviceConfs = new HashMap<>();
 		xref = new HashMap<>();
-		deviceDir = new File(pmsConf.getProfileDirectory(), "renderers");
-		if (deviceDir.exists()) {
-			LOGGER.info("Loading device configurations from " + deviceDir.getAbsolutePath());
-			File[] files = deviceDir.listFiles();
-			Arrays.sort(files);
-			for (File f : files) {
-				if (f.getName().endsWith(".conf")) {
-					loadDeviceFile(f, createPropertiesConfiguration());
-					PMS.getFileWatcher().add(new FileWatcher.Watch(f.getPath(), reloader));
+		if (Files.exists(deviceDir)) {
+			LOGGER.info("Loading device configurations from \"{}\"", deviceDir.toAbsolutePath());
+			DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<Path>() {
+
+				@Override
+				public boolean accept(Path entry) throws IOException {
+					return "conf".equalsIgnoreCase(FileUtil.getExtension(entry));
 				}
+			};
+
+			try (DirectoryStream<Path> filess = Files.newDirectoryStream(deviceDir, filter)) {
+				for (Path configurationFile : filess) {
+					loadDeviceFile(configurationFile.toFile(), createPropertiesConfiguration());
+					FileWatcher.add(new FileWatcher.Watch(configurationFile.toAbsolutePath().toString(), reloader));
+				}
+			} catch (IOException e) {
+				LOGGER.error("IO error while looking for device configuration files in \"{}\": {}", deviceDir.toAbsolutePath(), e.getMessage());
+				LOGGER.trace("", e);
 			}
 		}
 	}
@@ -250,7 +267,7 @@ public class DeviceConfiguration extends PmsConfiguration {
 			} else if (!filename.endsWith(".conf")) {
 				filename += ".conf";
 			}
-			file = new File(deviceDir, filename);
+			file = new File(deviceDir.toFile(), filename);
 			ArrayList<String> conf = new ArrayList<>();
 
 			// Add the header and device id
@@ -259,7 +276,7 @@ public class DeviceConfiguration extends PmsConfiguration {
 			conf.add("# See DefaultRenderer.conf for descriptions of all possible renderer options");
 			conf.add("# and UMS.conf for program options.");
 			conf.add("");
-			conf.add("# Options in this file override the default settings for the specific " + r.getSimpleName(r) + " device(s) listed below.");
+			conf.add("# Options in this file override the default settings for the specific " + RendererConfiguration.getSimpleName(r) + " device(s) listed below.");
 			conf.add("# Specify devices by uuid (or address if no uuid), separated by commas if more than one.");
 			conf.add("");
 			conf.add(DEVICE_ID + " = " + r.getId());

@@ -291,7 +291,7 @@ public class RendererConfiguration extends UPNPHelper.Renderer {
 			}
 		}
 		Collections.sort(allRenderersNames, String.CASE_INSENSITIVE_ORDER);
-		DeviceConfiguration.loadDeviceConfigurations(pmsConf);
+		DeviceConfiguration.loadDeviceConfigurations();
 	}
 
 	public int getInt(String key, int def) {
