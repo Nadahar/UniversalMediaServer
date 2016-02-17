@@ -6,13 +6,16 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.DirectoryStream;
 import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.charset.IllegalCharsetNameException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import net.pms.PMS;
@@ -830,22 +833,69 @@ public class FileUtil {
 			}
 
 			if (allSubs == null) {
-				allSubs = subFolder.listFiles(
-					new FilenameFilter() {
-						@Override
-						public boolean accept(File dir, String name) {
-							String ext = FilenameUtils.getExtension(name).toLowerCase();
-							if ("sub".equals(ext)) {
-								// Avoid microdvd/vobsub confusion by ignoring sub+idx pairs here since
-								// they'll come in unambiguously as vobsub via the idx file anyway
-								return isFileExists(new File(dir, name), "idx") == null;
+				DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<Path>() {
+
+					@Override
+					public boolean accept(Path entry) throws IOException {
+						Path fileName = entry.getFileName();
+						if (fileName == null) {
+							return false;
+						}
+						String ext = FilenameUtils.getExtension(fileName.toString());
+						return ext != null ? supported.contains(ext) : false;
+					}
+				};
+
+				List<File> allSubsList = new ArrayList<>();
+				try (DirectoryStream<Path> subtitleFiles = Files.newDirectoryStream(subFolder.toPath(), filter)) {
+					for (Path subtitleFile : subtitleFiles) {
+						allSubsList.add(subtitleFile.toFile());
+					}
+				} catch (IOException e) {
+					LOGGER.warn("IO error while enumerating subtitles files for folder \"{}\": {}", subFolder.getAbsolutePath(), e.getMessage());
+					LOGGER.trace("", e);
+					allSubsList.clear();
+				}
+
+				// FIXME This means that folders without subtitles files will be
+				// scanned over and over again. We should probably cache an
+				// empty result as well.
+				if (!allSubsList.isEmpty()) {
+
+					// Avoid microdvd/vobsub confusion by ignoring sub+idx pairs here since
+					// they'll come in unambiguously as vobsub via the idx file anyway
+					boolean subFound = true;
+					while (subFound) {
+						subFound = false;
+						for (File subtitleFile : allSubsList) {
+							String fileName = subtitleFile.getName();
+							if (StringUtil.hasValue(fileName)) {
+								String ext = FilenameUtils.getExtension(fileName);
+								if ("sub".equalsIgnoreCase(ext)) {
+									File idxFile = null;
+									String baseFileName = getFileNameWithoutExtension(fileName);
+									for (File innerSubtitleFile : allSubsList) {
+										if (
+											innerSubtitleFile != subtitleFile &&
+											innerSubtitleFile.getName().startsWith(baseFileName) &&
+											"idx".equalsIgnoreCase(FilenameUtils.getExtension(innerSubtitleFile.getName()))
+										) {
+											idxFile = innerSubtitleFile;
+											break;
+										}
+									}
+									if (idxFile != null) {
+										subFound = true;
+										allSubsList.remove(subtitleFile);
+										break;
+									}
+								}
 							}
-							return supported.contains(ext);
+
 						}
 					}
-				);
 
-				if (allSubs != null) {
+					allSubs = allSubsList.toArray(new File[0]);
 					subtitleCache.put(subFolder, allSubs);
 				}
 			}
