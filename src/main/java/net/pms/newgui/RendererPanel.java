@@ -216,12 +216,12 @@ public class RendererPanel extends JPanel {
 	}
 
 	public File chooseReferenceConf() {
-		JFileChooser fc = new JFileChooser(RendererConfiguration.getRenderersDir());
+		JFileChooser fc = new JFileChooser(RendererConfiguration.getRenderersFolder().toFile());
 		fc.setAcceptAllFileFilterUsed(false);
 		FileNameExtensionFilter filter = new FileNameExtensionFilter("Conf Files", "conf");
 		fc.addChoosableFileFilter(filter);
 		fc.setAcceptAllFileFilterUsed(true);
-		File defaultRef = new File(RendererConfiguration.getRenderersDir(), "DefaultRenderer.conf");
+		File defaultRef = new File(RendererConfiguration.getRenderersFolder().toFile(), "DefaultRenderer.conf");
 		if (defaultRef.exists()) {
 			fc.setSelectedFile(defaultRef);
 		}

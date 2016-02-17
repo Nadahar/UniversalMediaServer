@@ -5,9 +5,14 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Reader;
 import java.net.InetAddress;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.Future;
 import java.util.regex.Matcher;
@@ -24,6 +29,8 @@ import net.pms.network.SpeedStats;
 import net.pms.network.UPNPHelper;
 import net.pms.newgui.StatusTab;
 import net.pms.util.BasicPlayer;
+import net.pms.util.FilePermissions;
+import net.pms.util.FileUtil;
 import net.pms.util.FileWatcher;
 import net.pms.util.PropertiesUtil;
 import net.pms.util.StringUtil;
@@ -238,36 +245,47 @@ public class RendererConfiguration extends UPNPHelper.Renderer {
 			LOGGER.debug("Caught exception", e);
 		}
 
-		File renderersDir = getRenderersDir();
+		Path renderersFolder = getRenderersFolder();
 
-		if (renderersDir != null) {
-			LOGGER.info("Loading renderer configurations from " + renderersDir.getAbsolutePath());
+		if (renderersFolder != null) {
+			LOGGER.info("Loading renderer configurations from \"{}\"",  renderersFolder.toAbsolutePath());
 
-			File[] confs = renderersDir.listFiles();
-			Arrays.sort(confs);
-			int rank = 1;
-
-			List<String> selectedRenderers = pmsConf.getSelectedRenderers();
-			for (File f : confs) {
-				if (f.getName().endsWith(".conf")) {
-					try {
-						RendererConfiguration r = new RendererConfiguration(f);
-						r.rank = rank++;
-						String rendererName = r.getConfName();
-						allRenderersNames.add(rendererName);
-						String renderersGroup = null;
-						if (rendererName.indexOf(" ") > 0) {
-							renderersGroup = rendererName.substring(0, rendererName.indexOf(" "));
-						}
-
-						if (selectedRenderers.contains(rendererName) || selectedRenderers.contains(renderersGroup) || selectedRenderers.contains(pmsConf.ALL_RENDERERS)) {
-							enabledRendererConfs.add(r);
-						} else {
-							LOGGER.debug("Ignored " + rendererName + " configuration");
-						}
-					} catch (ConfigurationException ce) {
-						LOGGER.info("Error in loading configuration of: " + f.getAbsolutePath());
+			List<Path> configurations = new ArrayList<Path>();
+			DirectoryStream.Filter<Path> filter = FileUtil.createDirectoryStreamExtensionFilter("conf", false);
+			try (DirectoryStream<Path> configurationFiles = Files.newDirectoryStream(renderersFolder, filter)) {
+				for (Path configurationFile : configurationFiles) {
+					if (Files.isRegularFile(configurationFile)) {
+						configurations.add(configurationFile);
 					}
+				}
+			} catch (IOException e) {
+				LOGGER.error("IO error while enumerating renderer configurations: {}", e.getMessage());
+				LOGGER.trace("", e);
+			}
+
+			Collections.sort(configurations);
+
+			int rank = 1;
+			List<String> selectedRenderers = pmsConf.getSelectedRenderers();
+			for (Path configuration : configurations) {
+				try {
+					RendererConfiguration rendererConfiguration = new RendererConfiguration(configuration.toFile());
+					rendererConfiguration.rank = rank++;
+					String rendererName = rendererConfiguration.getConfName();
+					allRenderersNames.add(rendererName);
+					String renderersGroup = null;
+					if (rendererName.indexOf(" ") > 0) {
+						renderersGroup = rendererName.substring(0, rendererName.indexOf(" "));
+					}
+
+					if (selectedRenderers.contains(rendererName) || selectedRenderers.contains(renderersGroup) || selectedRenderers.contains(pmsConf.ALL_RENDERERS)) {
+						enabledRendererConfs.add(rendererConfiguration);
+					} else {
+						LOGGER.debug("Ignored disabled configuration {}", rendererName);
+					}
+				} catch (ConfigurationException ce) {
+					LOGGER.info("Error loading renderer configuration \"{}\": {}", configuration.toAbsolutePath(), ce.getMessage());
+					LOGGER.trace("", ce);
 				}
 			}
 		}
@@ -437,6 +455,11 @@ public class RendererConfiguration extends UPNPHelper.Renderer {
 		return null;
 	}
 
+	/**
+	 * @return The first readable renderer folder from project.renderers.dir
+	 * @deprecated This uses the bugged {@link File#canRead()}, use
+	 *             {@link #getRenderersFolder()} instead
+	 */
 	public static File getRenderersDir() {
 		final String[] pathList = PropertiesUtil.getProjectProperties().get("project.renderers.dir").split(",");
 
@@ -449,6 +472,32 @@ public class RendererConfiguration extends UPNPHelper.Renderer {
 						return file;
 					} else {
 						LOGGER.warn("Can't read directory: {}", file.getAbsolutePath());
+					}
+				}
+			}
+		}
+
+		return null;
+	}
+
+	public static Path getRenderersFolder() {
+		final String[] pathList = PropertiesUtil.getProjectProperties().get("project.renderers.dir").split(",");
+
+		for (String path : pathList) {
+			if (StringUtil.hasValue(path)) {
+				Path folder = Paths.get(path.trim());
+
+				if (Files.isDirectory(folder)) {
+					try {
+						FilePermissions permissions = new FilePermissions(folder);
+						if (permissions.isBrowsable()) {
+							return folder;
+						} else {
+							LOGGER.warn("Insufficient permissions ({}) to read folder \"{}\"", permissions, folder.toAbsolutePath());
+						}
+					} catch (FileNotFoundException e) {
+						LOGGER.error("Error reading folder \"{}\": {}", folder.toAbsolutePath(), e.getMessage());
+						LOGGER.trace("", e);
 					}
 				}
 			}
@@ -710,7 +759,7 @@ public class RendererConfiguration extends UPNPHelper.Renderer {
 		File f = getFile();
 		if (f == null || f.equals(NOFILE)) {
 			String name = getSimpleName(this);
-			f = new File(getRenderersDir(), name.equals(getSimpleName(defaultConf)) ? getDefaultFilename(this) :  (name.replace(" ", "") + ".conf"));
+			f = new File(getRenderersFolder().toFile(), name.equals(getSimpleName(defaultConf)) ? getDefaultFilename(this) :  (name.replace(" ", "") + ".conf"));
 		}
 		return f;
 	}
