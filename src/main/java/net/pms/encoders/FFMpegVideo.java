@@ -406,10 +406,38 @@ public class FFMpegVideo extends Player {
 				transcodeOptions.add("-f");
 				if (dtsRemux) {
 					transcodeOptions.add("mpeg2video");
+					if (
+						params.sid.isEmbedded() &&
+						(
+							params.sid.getType() == SubtitleType.EIA608
+//							|| params.sid.getType() == SubtitleType.EIA708
+						)
+					) {
+						transcodeOptions.add("-a53cc");
+					}
 				} else if (renderer.isTranscodeToMPEGTS()) {
 					transcodeOptions.add("mpegts");
+					if (
+						!renderer.isTranscodeToH264() &&
+						params.sid.isEmbedded() &&
+						(
+							params.sid.getType() == SubtitleType.EIA608
+//							|| params.sid.getType() == SubtitleType.EIA708
+						)
+					) {
+						transcodeOptions.add("-a53cc");
+					}
 				} else {
 					transcodeOptions.add("vob");
+					if (
+						params.sid.isEmbedded() &&
+						(
+							params.sid.getType() == SubtitleType.EIA608
+//							|| params.sid.getType() == SubtitleType.EIA708
+						)
+					) {
+						transcodeOptions.add("-a53cc");
+					}
 				}
 			}
 		}
