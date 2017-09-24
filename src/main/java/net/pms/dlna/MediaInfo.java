@@ -114,27 +114,24 @@ public class MediaInfo {
 	}
 	private Pointer Handle;
 
-	@Deprecated
-	public enum StreamKind {
-		General,
-		Video,
-		Audio,
-		Text,
-		Chapters,
-		Image,
-		Menu,
-		Other;
-	}
-
 	public enum StreamType {
-		General,
-		Video,
-		Audio,
-		Text,
-		Chapters,
-		Image,
-		Menu,
-		Other;
+		General(0),
+		Video(1),
+		Audio(2),
+		Text(3),
+		Other(4),
+		Image(5),
+		Menu(6);
+
+		private final int value;
+
+		private StreamType(int value) {
+			this.value = value;
+		}
+
+		public int getValue() {
+			return value;
+		}
 	}
 
 	// Enums
@@ -330,7 +327,7 @@ public class MediaInfo {
 	public String Get(StreamType streamType, int streamNumber, String parameter, InfoType infoType, InfoType searchType) {
 		return MediaInfoDLL_Internal.INSTANCE.Get(
 			Handle,
-			streamType.ordinal(),
+			streamType.getValue(),
 			streamNumber,
 			new WString(parameter),
 			infoType.ordinal(),
@@ -364,7 +361,7 @@ public class MediaInfo {
 	public String Get(StreamType streamType, int streamNumber, int parameterIndex, InfoType infoType) {
 		return MediaInfoDLL_Internal.INSTANCE.GetI(
 			Handle,
-			streamType.ordinal(),
+			streamType.getValue(),
 			streamNumber,
 			parameterIndex,
 			infoType.ordinal()).toString();
@@ -378,7 +375,7 @@ public class MediaInfo {
 	 * @return number of Streams of the given Stream kind
 	 */
 	public int Count_Get(StreamType streamType) {
-		return MediaInfoDLL_Internal.INSTANCE.Count_Get(Handle, streamType.ordinal(), -1);
+		return MediaInfoDLL_Internal.INSTANCE.Count_Get(Handle, streamType.getValue(), -1);
 	}
 
 	/**
@@ -390,7 +387,7 @@ public class MediaInfo {
 	 * @return number of Streams of the given Stream kind
 	 */
 	public int Count_Get(StreamType streamType, int streamNumber) {
-		return MediaInfoDLL_Internal.INSTANCE.Count_Get(Handle, streamType.ordinal(), streamNumber);
+		return MediaInfoDLL_Internal.INSTANCE.Count_Get(Handle, streamType.getValue(), streamNumber);
 	}
 
 	// Options
